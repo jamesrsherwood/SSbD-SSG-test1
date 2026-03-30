@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SSbD SSG – SSbD Assessment</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <style>
+        .page-content { max-width: 1200px; }
+
+        /* ── Settings banner ──────────────────────────────────────────── */
+        .settings-bar {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 18px;
+            align-items: center;
+        }
+        .settings-bar strong { color: #444; }
+        .settings-bar a { color: #444; font-size: 12px; text-decoration: none; margin-left: 10px; }
+        .settings-bar a:hover { text-decoration: underline; }
+
+        /* ── Risk badges ─────────────────────────────────────────────── */
+        .risk-badge {
+            display: inline-block;
+            min-width: 24px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Main table ──────────────────────────────────────────────── */
+        .ssbd-wrap {
+            overflow-x: auto;
+        }
+        table.ssbd-table {
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-size: 13px;
+        }
+        table.ssbd-table th {
+            background: #556B2F;
+            color: #fff;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 6px 8px;
+            text-align: center;
+            border-bottom: 2px solid #3d4d21;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+        table.ssbd-table th:first-child { text-align: left; }
+        table.ssbd-table th.sort-asc::after  { content: ' ↑'; }
+        table.ssbd-table th.sort-desc::after { content: ' ↓'; }
+        .hide-c21 .c21-col { display: none; }
+        table.ssbd-table td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #c8d4b0;
+            text-align: left;
+            vertical-align: middle;
+        }
+        table.ssbd-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+            cursor: pointer;
+            color: #444;
+        }
+        table.ssbd-table td:first-child:hover { text-decoration: none; }
+        table.ssbd-table tr:hover td { background: #f7f7f7; }
+        table.ssbd-table tr.expanded td { background: #f2f2f2; }
+
+        /* ── Detail panel ─────────────────────────────────────────────── */
+        .detail-row td {
+            padding: 0 !important;
+            background: #f5f5f5 !important;
+            border-bottom: 2px solid #3d4d21 !important;
+        }
+        .detail-inner {
+            padding: 14px 16px;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+        }
+        .detail-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px 12px;
+        }
+        .detail-card h4 {
+            margin: 0 0 6px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #444;
+        }
+        .detail-card .dl { display: flex; flex-direction: column; gap: 3px; }
+        .detail-card .dl-row { display: flex; justify-content: space-between; font-size: 12px; }
+        .detail-card .dl-row .k { color: #666; }
+        .detail-card .dl-row .v { font-weight: 500; color: #222; text-align: right; max-width: 120px; word-break: break-word; }
+
+        /* ── Search bar ──────────────────────────────────────────────── */
+        .search-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        .search-row input {
+            flex: 1;
+            padding: 6px 10px;
+            font-size: 13px;
+            font-family: inherit;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .search-row input:focus { outline: none; border-color: #444; }
+        .search-row .count { font-size: 12px; color: #888; white-space: nowrap; }
+
+        /* ── Class filter buttons ─────────────────────────────────────── */
+        .class-filter-row {
+            display: flex;
+            gap: 0;
+            margin-bottom: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .class-filter-row .cf-label {
+            font-size: 12px;
+            color: #888;
+            margin-right: 4px;
+            white-space: nowrap;
+        }
+        .class-btn {
+            padding: 5px 12px;
+            font-size: 12px;
+            font-family: inherit;
+            border: 1px solid #b0bec5;
+            background: #f5f5f5;
+            color: #555;
+            cursor: pointer;
+            border-radius: 3px;
+            white-space: nowrap;
+            transition: background 0.1s, color 0.1s;
+        }
+        .class-btn:hover { background: #e8e8e8; border-color: #444; color: #444; }
+        .class-btn.active { background: #555; color: white; border-color: #444; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <a href="index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+        <img src="logo.svg" alt="SSbD SSG logo" style="height:36px;width:36px;border-radius:3px;">
+        <strong style="color:white;">SSbD SSG</strong>
+    </a>
+    <div>
+        <a href="index.html">Home</a>
+        <a href="database.html">Database</a>
+        <a href="ssbd.html">SSbD</a>
+        <a href="guide.html">Guide</a>
+        <a href="about.html">About</a>
+    </div>
+</div>
+
+<div class="page-content">
+    <h2 style="margin-bottom:20px;">SSbD Assessment</h2>
+
+    <!-- Settings banner -->
+    <div class="settings-bar" id="settings-banner">
+        Loading settings…
+        <a href="index.html">← Edit settings</a>
+    </div>
+
+    <!-- Class filter buttons -->
+    <div class="class-filter-row">
+        <span class="cf-label">Show:</span>
+        <button class="class-btn active" data-classes="Small set">Common R&amp;D solvents</button>
+        <button class="class-btn" data-classes="Small set,Medium set">Standard solvents</button>
+        <button class="class-btn" data-classes="Small set,Medium set,Large set">Expanded solvent list</button>
+        <button class="class-btn" data-classes="">Full dataset</button>
+    </div>
+
+    <!-- Toggles row -->
+    <div class="search-row" style="margin-bottom:6px;flex-wrap:wrap;gap:8px 20px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+            <input type="checkbox" id="show-unknown-toggle">
+            <span>Consider unknown risks</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+            <input type="checkbox" id="show-c21-toggle" checked>
+            <span>Show CHEM21 columns</span>
+        </label>
+        <span style="color:#888;font-size:11px;">When checked, worst-case unknown hazard scores are shown in brackets where they differ — e.g. <span style="color:#c0392b;font-weight:700;">(A)</span> for SSbD Health/Safety, <span style="color:#9c0006;font-weight:700;">(8)</span> for CHEM21 scores.</span>
+    </div>
+
+    <!-- Search + count -->
+    <div class="search-row">
+        <input type="text" id="search-input" placeholder="Filter solvents by name…">
+        <span class="count" id="row-count"></span>
+    </div>
+
+    <!-- Table -->
+    <div class="ssbd-wrap">
+        <table class="ssbd-table" id="ssbd-table">
+            <thead>
+                <tr>
+                    <th data-col="name"  style="width:260px;">Solvent</th>
+                    <th data-col="conv"  style="width:64px;" title="Predicted conversion at your reaction time (LSER/VTNA). Set reaction, concentrations and time in Settings.">Conv.<br>%</th>
+                    <th data-col="s4"    style="width:98px;" title="SSbD Step 4: LCA sustainability. Left circle = climate change (kg CO₂eq); right circle = water use (L). Circle area is proportional to magnitude; smallest circle = 1/10 the area of the largest.">Impact<br><span style="font-size:9px;font-weight:400;color:#888;text-transform:none;letter-spacing:0;">CC &nbsp; WU</span></th>
+                    <th data-col="s2a"   style="width:78px;" title="SSbD Step 2a: Occupational health — worst of LT inhalation, ST inhalation, dermal">Health</th>
+                    <th data-col="s2b"   style="width:78px;" title="SSbD Step 2b: Fire & explosion">Safety</th>
+                    <th data-col="s3"    style="width:100px;" title="SSbD Step 3: Environmental hazard & fate">Environment</th>
+                    <th data-col="c21h" class="c21-col" style="width:76px;" title="CHEM21 Health score (1=best, 10=worst). Worst-case shown in brackets when 'Show unknown risks' is on.">C21<br>Health</th>
+                    <th data-col="c21s" class="c21-col" style="width:74px;" title="CHEM21 Safety score (1=best, 10=worst). Worst-case shown in brackets when 'Show unknown risks' is on.">C21<br>Safe</th>
+                    <th data-col="c21e" class="c21-col" style="width:74px;" title="CHEM21 Environment score (1=best, 10=worst). Worst-case shown in brackets when 'Show unknown risks' is on.">C21<br>Env</th>
+                </tr>
+            </thead>
+            <tbody id="ssbd-body">
+                <tr><td colspan="9" style="color:#aaa; text-align:center; padding:30px;">Loading…</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="appData.js"></script>
+<script src="state.js"></script>
+<script src="solventData.js"></script>
+<script src="ssbd_scoring.js"></script>
+<script src="conversion.js"></script>
+<script src="chem21.js"></script>
+<script src="ghs.js"></script>
+<script>
+// ── Restore state from URL hash (file:// cross-page compat) ──────────────
+(function () {
+    const h = window.location.hash;
+    if (h.startsWith('#st=')) {
+        try { saveState(JSON.parse(decodeURIComponent(h.slice(4)))); } catch (e) {}
+        history.replaceState(null, '', window.location.pathname);
+    }
+})();
+
+// ── Load data ─────────────────────────────────────────────────────────────
+let solventData = SOLVENT_DATA;
+let state = loadState();
+let sortCol = 'name';
+let sortAsc = true;
+let filterText = '';
+let expandedName = null;
+// null = show all; otherwise an array of Class values to include
+let classFilter = ['Small set'];
+// Shared with guide.html via the same localStorage key
+let showUnknownRisks = localStorage.getItem('ssgShowUnknownRisks') !== 'false';
+let ccRange  = null;   // { min, max } of s4.cc across all solvents
+let wuRange  = null;   // { min, max } of s4.wu across all solvents
+
+// ── Re-render when settings change in another tab ─────────────────────────
+window.addEventListener('storage', e => {
+    if (e.key === 'ssgUserSettings') {
+        state = loadState();
+        renderBanner();
+        renderTable();
+    }
+});
+
+// Re-render when page is restored from back/forward cache (same-tab navigation).
+// Without this, pressing Back from index.html returns a stale cached page whose
+// `state` variable was set before the user changed settings.
+window.addEventListener('pageshow', e => {
+    if (e.persisted) {
+        state = loadState();
+        renderBanner();
+        renderTable();
+    }
+});
+
+// ── Settings banner ───────────────────────────────────────────────────────
+function renderBanner() {
+    const s = state;
+    const proc = (APP_OPTIONS.processTypes.find(p => p.id === s.processType) || {}).label || s.processType;
+    const T    = s.processTemp ?? s.reactionTemp ?? 25;
+    document.getElementById('settings-banner').innerHTML =
+        `<strong>PROC:</strong> ${s.processType} &nbsp;`+
+        `<strong>Process T:</strong> ${T} °C &nbsp;`+
+        `<strong>Exposure T:</strong> ${s.exposureTemp} &nbsp;`+
+        `<strong>Exposure time:</strong> ${s.exposureTime} &nbsp;`+
+        `<strong>Ventilation:</strong> ${s.ventilation} &nbsp;`+
+        `<strong>LEV:</strong> ${s.lev ? 'Yes' : 'No'} &nbsp;`+
+        `<strong>RPE:</strong> ${s.rpe} &nbsp;`+
+        `<strong>PPE:</strong> ${s.ppe}`+
+        `<a href="index.html">← Edit settings</a>`;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+
+/** Return the worse of two step results (score 0 = no data, treated as neutral). */
+function _worseStep(a, b) {
+    if (a.score === 0) return b;
+    if (b.score === 0) return a;
+    return a.score <= b.score ? a : b;
+}
+
+/**
+ * Bracketed unknown-risk label for SSbD A-E badge columns.
+ * Returns e.g. <span style="color:#c0392b">(A)</span> when wcScore differs.
+ */
+const _WC_BADGE_COLORS = ['', '#c0392b', '#e67e22', '#b8960a', '#27ae60', '#852379'];
+function unknownRiskLabel(knownScore, wcScore) {
+    if (!wcScore || wcScore === knownScore) return '';
+    const lbl   = SSBD.LABELS[wcScore] || '?';
+    const color = _WC_BADGE_COLORS[wcScore] || '#888';
+    return `<span style="color:${color};font-weight:700;font-size:11px;margin-left:3px;" title="Worst-case unknown hazard: ${SSBD.FULL[wcScore] || lbl}">(${lbl})</span>`;
+}
+
+/**
+ * Bracketed unknown-risk label for CHEM21 1-10 score columns.
+ * Color is slightly darker than the cell background band.
+ */
+function c21WcLabel(knownScore, wcScore) {
+    if (!showUnknownRisks || !wcScore || wcScore === knownScore) return '';
+    let color;
+    if      (wcScore <= 3) color = '#1f6b28';   // darker green
+    else if (wcScore <= 6) color = '#7d6200';   // darker amber
+    else                   color = '#9c0006';   // darker red
+    return `<span style="color:${color};font-weight:700;font-size:11px;margin-left:3px;" title="Worst-case CHEM21 score: ${wcScore}">(${wcScore})</span>`;
+}
+
+// ── Compute and cache scores ──────────────────────────────────────────────
+let scored = [];
+
+function computeScores() {
+    scored = solventData.map(s => {
+        const r = SSBD.all(s, state);   // always known hazards only
+
+        // Compute WC (worst-case unknown) scores for Health, Safety and Environment when toggle is on
+        let rWC = null;
+        if (showUnknownRisks) {
+            const sEff   = Object.assign({}, s, CHEM21.buildWorstCaseHazards(s));
+            const rWCraw = SSBD.all(sEff, state);
+            let   wcS2a  = _worseStep(r.s2a, rWCraw.s2a);
+            const wcS2b  = _worseStep(r.s2b, rWCraw.s2b);
+            // SSbD1 priority override: hazard-group escalation forces health to A
+            if (r.s1.score > 1 && rWCraw.s1.score === 1 && wcS2a.score > 1)
+                wcS2a = Object.assign({}, wcS2a, { score: 1 });
+            // Water: health is definitively E — restore after any override
+            if ((s['Name'] || '').trim() === 'Water') wcS2a = r.s2a;
+            // Environment worst-case: augment missing eco-toxicity data
+            const sEnv  = Object.assign({}, s, CHEM21.buildWorstCaseEnv(s));
+            const wcS3  = _worseStep(r.s3, SSBD.step3(sEnv));
+            rWC = { s2a: wcS2a, s2b: wcS2b, s3: wcS3 };
+        }
+
+        return { s, r, rWC };
+    });
+
+    // Compute absolute CC and water ranges across all solvents with data
+    const _absCC = x => { const s4 = x.r.s4; return s4.cc !== null && s4.m_kg !== null ? s4.cc * s4.m_kg : s4.cc; };
+    const _absWU = x => { const s4 = x.r.s4; return s4.wu !== null && s4.m_kg !== null ? s4.wu * s4.m_kg : s4.wu; };
+    const ccVals = scored.map(_absCC).filter(v => v !== null && isFinite(v));
+    const wuVals = scored.map(_absWU).filter(v => v !== null && isFinite(v));
+    ccRange = ccVals.length ? { min: Math.min(...ccVals), max: Math.max(...ccVals) } : null;
+    wuRange = wuVals.length ? { min: Math.min(...wuVals), max: Math.max(...wuVals) } : null;
+}
+
+// ── Sort helpers ──────────────────────────────────────────────────────────
+function nameSortKey(name) {
+    let key = '';
+    for (const ch of (name || '')) {
+        const cp = ch.codePointAt(0);
+        if ((cp >= 48 && cp <= 57) ||
+            (cp >= 65 && cp <= 90)  ||
+            (cp >= 97 && cp <= 122) ||
+            cp > 127) {
+            key += ch.toLowerCase();
+        }
+    }
+    return key;
+}
+
+function sortKey(row, col) {
+    const r = row.r;
+    switch (col) {
+        case 'name':    return nameSortKey(row.s['Name']);
+        case 's2a':     return r.s2a.score || 99;
+        case 's2b':     return r.s2b.score;
+        case 's3':      return r.s3.score;
+        case 's4':      return r.s4.score || 99;
+        case 'conv': {
+            const cv = CONVERSION.getConversion(row.s, state);
+            return cv !== null ? cv : -1;
+        }
+        case 'c21h': { const sc = CHEM21.getScores(row.s); return sc.health; }
+        case 'c21s': { const sc = CHEM21.getScores(row.s); return sc.safety; }
+        case 'c21e': { const sc = CHEM21.getScores(row.s); return sc.env;    }
+        default:        return 0;
+    }
+}
+
+function c21ScoreCell(knownScore, wcScore) {
+    const bg = CHEM21.scoreColor(knownScore);
+    const style = bg ? ` style="background:${bg};font-weight:700;"` : '';
+    return `<td class="c21-col"${style}>${CHEM21.fmt(knownScore)}${c21WcLabel(knownScore, wcScore)}</td>`;
+}
+
+// ── Donut chart for conversion % ──────────────────────────────────────────
+function donutChart(pct) {
+    const R = 12, CX = 17, CY = 17, SW = 6;
+    const CIRC = 2 * Math.PI * R;
+    if (pct === null) return '<span style="color:#bbb;font-size:12px;">—</span>';
+    const filled = Math.max(0, Math.min(pct / 100 * CIRC, CIRC)).toFixed(2);
+    return `<svg width="34" height="34" viewBox="0 0 34 34" style="display:block;margin:auto;"><title>${pct.toFixed(0)}%</title>
+        <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#e0e4e8" stroke-width="${SW}"/>
+        <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="steelblue" stroke-width="${SW}"
+            stroke-dasharray="${filled} ${CIRC.toFixed(2)}" stroke-linecap="butt"
+            transform="rotate(-90 ${CX} ${CY})"/>
+        <text x="${CX}" y="${CY+3.5}" text-anchor="middle" font-size="8" fill="#444" font-family="inherit">${pct.toFixed(0)}%</text>
+    </svg>`;
+}
+
+// ── Impact circles for climate change (CC) and water use (WU) ─────────────
+function impactCircles(s4, ccRng, wuRng) {
+    const MAX_R = 12, W = 64, H = 34, CY = 15, cx1 = 16, cx2 = 48;
+    const absCC = (s4.cc != null && s4.m_kg != null) ? s4.cc * s4.m_kg : s4.cc;
+    const absWU = (s4.wu != null && s4.m_kg != null) ? s4.wu * s4.m_kg : s4.wu;
+
+    function circleR(v, range) {
+        if (v == null || !range || range.max === range.min) return null;
+        const norm = (v - range.min) / (range.max - range.min);
+        return MAX_R * Math.sqrt(0.1 + 0.9 * norm);
+    }
+
+    const rCC = circleR(absCC, ccRng);
+    const rWU = circleR(absWU, wuRng);
+    if (rCC === null && rWU === null) return '<span style="color:#bbb;font-size:12px;">—</span>';
+    const fmtV = v => v == null ? 'No data' : (v < 1 ? v.toPrecision(2) : v < 100 ? +v.toPrecision(3) : Math.round(v));
+
+    function dot(cx, r, color, titleText) {
+        if (r === null)
+            return `<circle cx="${cx}" cy="${CY}" r="3" fill="#e0e4e8"><title>${titleText}</title></circle>`;
+        return `<circle cx="${cx}" cy="${CY}" r="${r.toFixed(1)}" fill="${color}" opacity="0.75"><title>${titleText}</title></circle>`;
+    }
+
+    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;margin:auto;">
+        ${dot(cx1, rCC, '#4a86c8', `Climate change: ${fmtV(absCC)} kg CO\u2082eq`)}
+        ${dot(cx2, rWU, '#27ae60', `Water use: ${fmtV(absWU)} L`)}
+        <text x="${cx1}" y="${H-1}" text-anchor="middle" font-size="7" fill="#999" font-family="inherit">CC</text>
+        <text x="${cx2}" y="${H-1}" text-anchor="middle" font-size="7" fill="#999" font-family="inherit">WU</text>
+    </svg>`;
+}
+
+// ── Render table ──────────────────────────────────────────────────────────
+function renderTable() {
+    SSBD.computeLCAThresholds(solventData, state);
+    computeScores();
+
+    // Filter
+    const q = filterText.toLowerCase();
+    let rows = scored;
+    if (classFilter) rows = rows.filter(r => classFilter.includes(r.s['Class']));
+    if (q) rows = rows.filter(r => r.s['Name'].toLowerCase().includes(q));
+
+    // Sort
+    rows = [...rows].sort((a, b) => {
+        const ka = sortKey(a, sortCol);
+        const kb = sortKey(b, sortCol);
+        if (ka < kb) return sortAsc ? -1 : 1;
+        if (ka > kb) return sortAsc ?  1 : -1;
+        return 0;
+    });
+
+    const totalInClass = classFilter ? scored.filter(r => classFilter.includes(r.s['Class'])).length : scored.length;
+    document.getElementById('row-count').textContent = q
+        ? `${rows.length} of ${totalInClass} solvents`
+        : `${rows.length} solvents`;
+
+    // Update sort header indicators
+    document.querySelectorAll('table.ssbd-table th').forEach(th => {
+        th.classList.remove('sort-asc','sort-desc');
+        if (th.dataset.col === sortCol) th.classList.add(sortAsc ? 'sort-asc' : 'sort-desc');
+    });
+
+    const tbody = document.getElementById('ssbd-body');
+    tbody.innerHTML = '';
+
+    rows.forEach(({s, r, rWC}) => {
+        const c21 = CHEM21.getScores(s);
+
+        const tr = document.createElement('tr');
+        if (s['Name'] === expandedName) tr.classList.add('expanded');
+        tr.innerHTML =
+            `<td>${s['Name']}${GHS.pictograms(s)}${GHS.cmrLabel(s)}${GHS.pbtLabel(r.s3.tag)}</td>`+
+            `<td style="text-align:center;padding:3px 4px;">${donutChart(CONVERSION.getConversion(s, state))}</td>`+
+            `<td style="text-align:center;padding:3px 4px;">${impactCircles(r.s4, ccRange, wuRange)}</td>`+
+            `<td>${SSBD.badge(r.s2a.score)}${rWC ? unknownRiskLabel(r.s2a.score, rWC.s2a.score) : ''}</td>`+
+            `<td>${SSBD.badge(r.s2b.score)}${rWC ? unknownRiskLabel(r.s2b.score, rWC.s2b.score) : ''}</td>`+
+            `<td>${SSBD.badge(r.s3.score)}${rWC ? unknownRiskLabel(r.s3.score, rWC.s3.score) : ''}</td>`+
+            c21ScoreCell(c21.health, rWC ? c21.healthWC : null) +
+            c21ScoreCell(c21.safety, rWC ? c21.safetyWC : null) +
+            c21ScoreCell(c21.env,    rWC ? c21.envWC    : null);
+
+        tr.querySelector('td:first-child').addEventListener('click', () => toggleDetail(s['Name'], r, tr, tbody));
+        tbody.appendChild(tr);
+
+        if (s['Name'] === expandedName) {
+            tbody.appendChild(buildDetailRow(s, r, 9, rWC));
+        }
+    });
+}
+
+// ── Detail row ────────────────────────────────────────────────────────────
+function toggleDetail(name, r, tr, tbody) {
+    if (expandedName === name) {
+        expandedName = null;
+    } else {
+        expandedName = name;
+    }
+    renderTable();
+}
+
+/**
+ * BCF bar: linear 0–10 000 L/kg.
+ * Green (0–2000) → amber (2000–5000) → red (5000+).
+ */
+function bcfBar(bcf) {
+    if (bcf === null) return '';
+    const CAP  = 10000;
+    const pct  = Math.min(100, bcf / CAP * 100).toFixed(1);
+    const t2   = (2000 / CAP * 100).toFixed(1);   // 20 %
+    const t5   = (5000 / CAP * 100).toFixed(1);   // 50 %
+    const t25  = (t5 - t2).toFixed(1);
+    return `<div style="position:relative;margin:4px 0 18px;">
+        <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;">
+            <div style="width:${t2}%;background:#27ae60;"></div>
+            <div style="width:${t25}%;background:#e67e22;"></div>
+            <div style="flex:1;background:#c0392b;"></div>
+        </div>
+        <div style="position:absolute;top:0;left:${t2}%;width:1px;height:9px;background:rgba(0,0,0,0.35);"></div>
+        <div style="position:absolute;top:0;left:${t5}%;width:1px;height:9px;background:rgba(0,0,0,0.35);"></div>
+        <div style="position:absolute;top:-4px;left:calc(${pct}% - 7px);
+                    width:14px;height:14px;border-radius:50%;
+                    background:white;border:2.5px solid #444;box-sizing:border-box;
+                    box-shadow:0 1px 3px rgba(0,0,0,.25);"></div>
+        <div style="position:relative;height:14px;margin-top:3px;font-size:10px;color:#999;">
+            <span style="position:absolute;left:${t2}%;transform:translateX(-50%);">2000</span>
+            <span style="position:absolute;left:${t5}%;transform:translateX(-50%);">5000</span>
+            <span style="position:absolute;right:0;">${bcf > CAP ? '&gt;' : ''}${CAP} L/kg</span>
+        </div>
+    </div>`;
+}
+
+/**
+ * NOEC bar: log scale 0.001–100 mg/L.
+ * Red (< 0.01, toxic threshold) → green (≥ 0.01).
+ */
+function noecBar(noec) {
+    if (noec === null) return '';
+    const LOG_MIN = -3, LOG_MAX = 2, LOG_SPAN = 5;   // log10(0.001) to log10(100)
+    const t01pct = ((Math.log10(0.01) - LOG_MIN) / LOG_SPAN * 100).toFixed(1);  // 20 %
+    const logVal = noec > 0 ? Math.log10(noec) : LOG_MIN;
+    const pct    = Math.min(100, Math.max(0, (logVal - LOG_MIN) / LOG_SPAN * 100)).toFixed(1);
+    return `<div style="position:relative;margin:4px 0 18px;">
+        <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;">
+            <div style="width:${t01pct}%;background:#c0392b;"></div>
+            <div style="flex:1;background:#27ae60;"></div>
+        </div>
+        <div style="position:absolute;top:0;left:${t01pct}%;width:1px;height:9px;background:rgba(0,0,0,0.35);"></div>
+        <div style="position:absolute;top:-4px;left:calc(${pct}% - 7px);
+                    width:14px;height:14px;border-radius:50%;
+                    background:white;border:2.5px solid #444;box-sizing:border-box;
+                    box-shadow:0 1px 3px rgba(0,0,0,.25);"></div>
+        <div style="position:relative;height:14px;margin-top:3px;font-size:10px;color:#999;">
+            <span style="position:absolute;left:0;">0.001</span>
+            <span style="position:absolute;left:${t01pct}%;transform:translateX(-50%);">0.01</span>
+            <span style="position:absolute;right:0;">${noec > 100 ? '&gt;' : ''}100 mg/L</span>
+        </div>
+    </div>`;
+}
+
+/**
+ * Fixed-threshold bar for atmospheric half-life.
+ * Scale: 0 – 60 d linear; threshold ticks at 3 d (short-lived) and 21 d (long-lived).
+ */
+function halflifeBar(halflife) {
+    if (halflife === null) return '';
+    const CAP = 60;
+    const pct    = Math.min(100, halflife / CAP * 100).toFixed(1);
+    const exceeded = halflife > CAP;
+    const t3pct  = (3  / CAP * 100).toFixed(1);  //  5 %
+    const t21pct = (21 / CAP * 100).toFixed(1);  // 35 %
+    // Three discrete segments: red | green (goldilocks) | red
+    return `<div style="position:relative;margin:4px 0 18px;">
+        <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;">
+            <div style="width:${t3pct}%;background:#c0392b;"></div>
+            <div style="width:${(t21pct - t3pct).toFixed(1)}%;background:#27ae60;"></div>
+            <div style="flex:1;background:#c0392b;"></div>
+        </div>
+        <div style="position:absolute;top:0;left:${t3pct}%;width:1px;height:9px;background:rgba(0,0,0,0.35);"></div>
+        <div style="position:absolute;top:0;left:${t21pct}%;width:1px;height:9px;background:rgba(0,0,0,0.35);"></div>
+        <div style="position:absolute;top:-4px;left:calc(${pct}% - 7px);
+                    width:14px;height:14px;border-radius:50%;
+                    background:white;border:2.5px solid #444;box-sizing:border-box;
+                    box-shadow:0 1px 3px rgba(0,0,0,.25);"></div>
+        <div style="position:relative;height:14px;margin-top:3px;font-size:10px;color:#999;">
+            <span style="position:absolute;left:${t3pct}%;transform:translateX(-50%);">3 d</span>
+            <span style="position:absolute;left:${t21pct}%;transform:translateX(-50%);">21 d</span>
+            <span style="position:absolute;right:0;">${exceeded ? '&gt;' : ''}${CAP} d</span>
+        </div>
+    </div>`;
+}
+
+/**
+ * Horizontal range bar showing where `value` sits within [range.min, range.max].
+ * `unit` is appended to the max label.
+ */
+function rangeBar(value, range, unit) {
+    if (value === null || !range || range.min === range.max) return '';
+    const pct = Math.min(100, Math.max(0,
+        (value - range.min) / (range.max - range.min) * 100
+    )).toFixed(1);
+    const fmt = v => v < 1 ? v.toPrecision(2) : v < 100 ? +v.toPrecision(3) : Math.round(v);
+    return `<div style="position:relative;margin:3px 0 10px;">
+        <div style="height:6px;border-radius:3px;background:linear-gradient(to right,#27ae60,#f1c40f,#c0392b);"></div>
+        <div style="position:absolute;top:-4px;left:calc(${pct}% - 7px);
+                    width:14px;height:14px;border-radius:50%;
+                    background:white;border:2.5px solid #444;box-sizing:border-box;
+                    box-shadow:0 1px 3px rgba(0,0,0,.25);"></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#999;margin-top:4px;">
+            <span>${fmt(range.min)}</span><span>${fmt(range.max)} ${unit}</span>
+        </div>
+    </div>`;
+}
+
+/**
+ * Sustainability bar: discrete A–E coloured zones (best E→A worst) clipped to
+ * the actual data range.  `thresholds` = [E/D, D/C, C/B, B/A] boundary values.
+ * Options: logScale (bool), extraTicks (array of additional tick values).
+ */
+function sustainBar(value, range, thresholds, unit, { logScale = false, extraTicks = [] } = {}) {
+    if (value === null || value === undefined || !range || range.min === range.max) return '';
+    const toS  = v => logScale ? Math.log10(Math.max(v, 1e-10)) : v;
+    const sMin = toS(range.min), sMax = toS(range.max), span = sMax - sMin;
+    const pct  = v => Math.min(100, Math.max(0, (toS(v) - sMin) / span * 100));
+    const fmt  = v => v < 1 ? v.toPrecision(2) : v < 100 ? +v.toPrecision(3) : Math.round(v);
+    const ZONE_COLORS = ['#852379', '#27ae60', '#f1c40f', '#e67e22', '#c0392b']; // E→A
+    const edges = [range.min, ...thresholds, range.max];
+    let segs = '', ticks = '';
+    for (let i = 0; i < ZONE_COLORS.length; i++) {
+        const lo = Math.max(edges[i], range.min), hi = Math.min(edges[i + 1], range.max);
+        if (hi <= lo) continue;
+        segs += `<div style="width:${(pct(hi) - pct(lo)).toFixed(1)}%;background:${ZONE_COLORS[i]};"></div>`;
+    }
+    for (const t of [...thresholds, ...extraTicks].sort((a, b) => a - b)) {
+        if (t > range.min && t < range.max)
+            ticks += `<div style="position:absolute;top:0;left:${pct(t).toFixed(1)}%;width:1px;height:9px;background:rgba(0,0,0,0.3);"></div>`;
+    }
+    const dotColor = value <= thresholds[0] ? '#852379'
+                   : value <= thresholds[1] ? '#27ae60'
+                   : value <= thresholds[2] ? '#f1c40f'
+                   : value <= thresholds[3] ? '#e67e22' : '#c0392b';
+    return `<div style="position:relative;margin:3px 0 14px;">
+        <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;">${segs}</div>
+        ${ticks}
+        <div style="position:absolute;top:-4px;left:calc(${pct(value).toFixed(1)}% - 7px);
+                    width:14px;height:14px;border-radius:50%;
+                    background:white;border:2.5px solid ${dotColor};box-sizing:border-box;
+                    box-shadow:0 1px 3px rgba(0,0,0,.25);"></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#999;margin-top:4px;">
+            <span>${fmt(range.min)}</span><span>${fmt(range.max)} ${unit}</span>
+        </div>
+    </div>`;
+}
+
+/**
+ * RCR bar: 0–200% scale with A–E ranking zones.
+ * Thresholds: E<0.5%, D 0.5–50%, C 50–75%, B 75–100%, A≥100%.
+ * rcr is a fraction (1.0 = 100%).
+ */
+function rcrBar(rcr) {
+    if (rcr === null || rcr === undefined) return '';
+    const CAP = 2.0;
+    const pct      = Math.min(100, rcr / CAP * 100).toFixed(1);
+    const exceeded = rcr > CAP;
+    // Threshold positions as % of bar width (0–200% scale)
+    const t05pct  = +(0.005 / CAP * 100).toFixed(2);  // 0.25% — D/E boundary
+    const t50pct  = +(0.50  / CAP * 100).toFixed(1);  // 25%   — C/D boundary
+    const t75pct  = +(0.75  / CAP * 100).toFixed(1);  // 37.5% — B/C boundary
+    const t100pct = +(1.00  / CAP * 100).toFixed(1);  // 50%   — A/B boundary
+    // Zone widths
+    const w05  = t05pct;
+    const w50  = t50pct  - t05pct;
+    const w75  = t75pct  - t50pct;
+    const w100 = t100pct - t75pct;
+    // Dot colour matches zone
+    const dotColor = rcr < 0.005 ? '#852379'
+                   : rcr < 0.5   ? '#27ae60'
+                   : rcr < 0.75  ? '#f1c40f'
+                   : rcr < 1.0   ? '#e67e22'
+                   :               '#c0392b';
+    return `<div style="position:relative;margin:4px 0 18px;">
+        <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;">
+            <div style="width:${w05}%;background:#852379;"></div>
+            <div style="width:${w50}%;background:#27ae60;"></div>
+            <div style="width:${w75}%;background:#f1c40f;"></div>
+            <div style="width:${w100}%;background:#e67e22;"></div>
+            <div style="flex:1;background:#c0392b;"></div>
+        </div>
+        <div style="position:absolute;top:0;left:${t05pct}%;width:1px;height:9px;background:rgba(0,0,0,0.35);"></div>
+        <div style="position:absolute;top:0;left:${t50pct}%;width:1px;height:9px;background:rgba(0,0,0,0.35);"></div>
+        <div style="position:absolute;top:0;left:${t75pct}%;width:1px;height:9px;background:rgba(0,0,0,0.35);"></div>
+        <div style="position:absolute;top:0;left:${t100pct}%;width:1px;height:9px;background:rgba(0,0,0,0.35);"></div>
+        <div style="position:absolute;top:-4px;left:calc(${pct}% - 7px);
+                    width:14px;height:14px;border-radius:50%;
+                    background:white;border:2.5px solid ${dotColor};box-sizing:border-box;
+                    box-shadow:0 1px 3px rgba(0,0,0,.25);"></div>
+        <div style="position:relative;height:14px;margin-top:3px;font-size:10px;color:#999;">
+            <span style="position:absolute;left:0;">0.5%</span>
+            <span style="position:absolute;left:${t50pct}%;transform:translateX(-50%);">50%</span>
+            <span style="position:absolute;left:${t75pct}%;transform:translateX(-50%);">75%</span>
+            <span style="position:absolute;left:${t100pct}%;transform:translateX(-50%);">100%</span>
+            <span style="position:absolute;right:0;">${exceeded ? '&gt;' : ''}200%</span>
+        </div>
+    </div>`;
+}
+
+/**
+ * Flash point bar: -40 to 120 °C linear.
+ * Colour zones: red (<23), amber (23–60), yellow (60–93), green (>93).
+ * Threshold ticks at 23, 60, 93 °C.
+ */
+function flashPointBar(fp) {
+    if (fp === null || fp === undefined) return '';
+    const MIN = -40, MAX = 120, SPAN = 160;
+    const t23pct = ((23 - MIN) / SPAN * 100).toFixed(1);
+    const t60pct = ((60 - MIN) / SPAN * 100).toFixed(1);
+    const t93pct = ((93 - MIN) / SPAN * 100).toFixed(1);
+    const pct      = Math.min(100, Math.max(0, (fp - MIN) / SPAN * 100)).toFixed(1);
+    const exceeded = fp > MAX;
+    const dotColor = fp < 23 ? '#c0392b' : fp <= 60 ? '#f1c40f' : fp <= 93 ? '#27ae60' : '#852379';
+    return `<div style="position:relative;margin:4px 0 18px;">
+        <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;">
+            <div style="width:${t23pct}%;background:#c0392b;"></div>
+            <div style="width:${(t60pct - t23pct).toFixed(1)}%;background:#f1c40f;"></div>
+            <div style="width:${(t93pct - t60pct).toFixed(1)}%;background:#27ae60;"></div>
+            <div style="flex:1;background:#852379;"></div>
+        </div>
+        <div style="position:absolute;top:0;left:${t23pct}%;width:1px;height:9px;background:rgba(0,0,0,0.35);"></div>
+        <div style="position:absolute;top:0;left:${t60pct}%;width:1px;height:9px;background:rgba(0,0,0,0.35);"></div>
+        <div style="position:absolute;top:0;left:${t93pct}%;width:1px;height:9px;background:rgba(0,0,0,0.35);"></div>
+        <div style="position:absolute;top:-4px;left:calc(${pct}% - 7px);
+                    width:14px;height:14px;border-radius:50%;
+                    background:white;border:2.5px solid ${dotColor};box-sizing:border-box;
+                    box-shadow:0 1px 3px rgba(0,0,0,.25);"></div>
+        <div style="position:relative;height:14px;margin-top:3px;font-size:10px;color:#999;">
+            <span style="position:absolute;left:${t23pct}%;transform:translateX(-50%);">23°C</span>
+            <span style="position:absolute;left:${t60pct}%;transform:translateX(-50%);">60°C</span>
+            <span style="position:absolute;left:${t93pct}%;transform:translateX(-50%);">93°C</span>
+            <span style="position:absolute;right:0;">${exceeded ? '&gt;' : ''}${MAX}°C</span>
+        </div>
+    </div>`;
+}
+
+/**
+ * SVG conversion-vs-time chart for the selected solvent and (optionally) the
+ * reference solvent set in index.html.  X: 0–24 h, Y: 0–100% conversion.
+ */
+function convChart(solvent, st) {
+    const reaction = st.reaction;
+    const entry = CONVERSION.LSER[reaction];
+    const noData = txt => `<em style="color:#aaa;font-size:11px;">${txt}</em>`;
+    if (!entry) return noData('No LSER data for this reaction type.');
+
+    const concA = parseFloat(st.reactantX && st.reactantX.conc);
+    const concB = parseFloat(st.reactantY && st.reactantY.conc);
+    const concC = parseFloat(st.reactantZ && st.reactantZ.conc);
+    const reactionTimeH = Math.max(0.01, parseFloat(st.reactionTime) || 12);
+
+    function makeProfile(sv) {
+        if (!sv) return null;
+        return CONVERSION.computeProfile(
+            reaction, sv,
+            isNaN(concA) ? null : concA,
+            (entry.b_order != null && entry.b_order > 0) ? (isNaN(concB) ? null : concB) : null,
+            (entry.c_order != null && entry.c_order > 0) ? (isNaN(concC) ? null : concC) : null,
+        );
+    }
+
+    const refName = (st.referenceSolvent || '').trim();
+    const refNameLC  = refName.toLowerCase();
+    const refSolvent = refName ? solventData.find(sv => (sv['Name'] || '').trim().toLowerCase() === refNameLC) : null;
+
+    const profileMain = makeProfile(solvent);
+    const profileRef  = makeProfile(refSolvent);
+
+    const mainHasData = profileMain && profileMain.time_hours.length >= 2;
+    const refHasData  = profileRef  && profileRef.time_hours.length  >= 2;
+
+    if (!mainHasData && !refHasData) {
+        if (!profileMain && !profileRef)
+            return noData('Conversion not available (polarity data required for this reaction).');
+        return noData('Set reactant concentrations in Settings to compute conversion.');
+    }
+
+    // SVG layout
+    const W = 580, H = 340;
+    const ML = 70, MR = 12, MT = 34, MB = 60;
+    const PW = W - ML - MR, PH = H - MT - MB;
+    const xS = t => ML + Math.min(Math.max(+t, 0), 24) / 24 * PW;
+    const yS = c => MT + PH - Math.min(Math.max(+c, 0), 100) / 100 * PH;
+
+    function makePoints(profile) {
+        if (!profile || profile.time_hours.length < 2) return null;
+        const pts = [];
+        let lastConv = 0;
+        for (let i = 0; i < profile.time_hours.length; i++) {
+            const t = profile.time_hours[i];
+            lastConv = profile.conv_pct[i];
+            pts.push(`${xS(t).toFixed(1)},${yS(lastConv).toFixed(1)}`);
+            if (t >= 24) break;
+        }
+        if (profile.time_hours[profile.time_hours.length - 1] < 24)
+            pts.push(`${xS(24).toFixed(1)},${yS(lastConv).toFixed(1)}`);
+        return pts.join(' ');
+    }
+
+    const mainPts = makePoints(profileMain);
+    const refPts  = makePoints(profileRef);
+
+    // Gridlines
+    const gridLines = [25, 50, 75].map(pct =>
+        `<line x1="${ML}" y1="${yS(pct).toFixed(1)}" x2="${W - MR}" y2="${yS(pct).toFixed(1)}" stroke="#e8e8e8" stroke-width="1"/>`
+    ).join('');
+
+    // Y-axis
+    const yAxis = [0, 25, 50, 75, 100].map(pct =>
+        `<text x="${ML - 8}" y="${(yS(pct) + 7).toFixed(1)}" text-anchor="end" font-size="22" fill="#555">${pct}%</text>`
+    ).join('');
+
+    // X-axis
+    const xAxis = [0, 6, 12, 18, 24].map(hr => {
+        const x = xS(hr).toFixed(1);
+        return `<line x1="${x}" y1="${MT + PH}" x2="${x}" y2="${MT + PH + 7}" stroke="#222" stroke-width="1.5"/>` +
+               `<text x="${x}" y="${MT + PH + 28}" text-anchor="middle" font-size="22" fill="#555">${hr}h</text>`;
+    }).join('');
+
+    // Reaction time marker
+    const rtX = xS(Math.min(reactionTimeH, 24)).toFixed(1);
+    const rtLine = `<line x1="${rtX}" y1="${MT}" x2="${rtX}" y2="${MT + PH}" stroke="#999" stroke-width="1.5" stroke-dasharray="4,3"/>` +
+                   `<text x="${rtX}" y="${MT - 6}" text-anchor="middle" font-size="22" fill="#999">${reactionTimeH}h</text>`;
+
+    // Legend
+    const mainConvAtT = mainHasData ? CONVERSION.conversionAtTime(profileMain, reactionTimeH) : null;
+    const refConvAtT  = refHasData  ? CONVERSION.conversionAtTime(profileRef,  reactionTimeH) : null;
+    const mainLabel = (solvent['Name'] || '').substring(0, 24);
+    const refLabel  = refSolvent ? (refSolvent['Name'] || '').substring(0, 24) : '';
+
+    // Legend: bottom-right, entries stacked upward. Line swatch right of text.
+    const LX = W - MR;   // right edge for line end
+    const LSW = 30;       // swatch width
+    let legend = '';
+    let ly = MT + PH - 10;  // bottom entry baseline
+    if (refPts) {
+        const cv = refConvAtT !== null ? ` — ${refConvAtT.toFixed(0)}%` : '';
+        legend = `<line x1="${LX - LSW}" y1="${ly}" x2="${LX}" y2="${ly}" stroke="#aaa" stroke-width="2" stroke-dasharray="6,4"/>` +
+                 `<text x="${LX - LSW - 6}" y="${ly + 7}" text-anchor="end" font-size="22" fill="#777">${refLabel}${cv} (ref)</text>`;
+        ly -= 30;
+    }
+    if (mainPts) {
+        const cv = mainConvAtT !== null ? ` — ${mainConvAtT.toFixed(0)}%` : '';
+        legend = `<line x1="${LX - LSW}" y1="${ly}" x2="${LX}" y2="${ly}" stroke="steelblue" stroke-width="2.5"/>` +
+                 `<text x="${LX - LSW - 6}" y="${ly + 7}" text-anchor="end" font-size="22" fill="#333">${mainLabel}${cv}</text>` +
+                 legend;
+    }
+
+    // Reference solvent status message
+    let refMsg = '';
+    if (refName && !refSolvent)
+        refMsg = `<text x="${W - MR}" y="${MT + 22}" text-anchor="end" font-size="22" fill="#c0392b">Reference "${refName}" not found</text>`;
+    else if (!refName)
+        refMsg = `<text x="${W - MR}" y="${MT + 22}" text-anchor="end" font-size="22" fill="#bbb">Set reference solvent in Settings</text>`;
+
+    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;" xmlns="http://www.w3.org/2000/svg">
+        ${gridLines}
+        <line x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT + PH}" stroke="#222" stroke-width="2"/>
+        <line x1="${ML}" y1="${MT + PH}" x2="${W - MR}" y2="${MT + PH}" stroke="#222" stroke-width="2"/>
+        ${xAxis}${yAxis}
+        ${rtLine}
+        ${refPts  ? `<polyline points="${refPts}"  fill="none" stroke="#aaa" stroke-width="2" stroke-dasharray="6,4" stroke-linejoin="round"/>` : ''}
+        ${mainPts ? `<polyline points="${mainPts}" fill="none" stroke="steelblue" stroke-width="2.5" stroke-linejoin="round"/>` : ''}
+        ${mainHasData ? '' : `<text x="${ML + 8}" y="${yS(50)}" font-size="22" fill="#bbb">No polarity data for ${mainLabel}</text>`}
+        ${legend}${refMsg}
+    </svg>`;
+}
+
+function buildDetailRow(s, r, colSpan, rWC) {
+    const detailTr = document.createElement('tr');
+    detailTr.classList.add('detail-row');
+    const td = document.createElement('td');
+    td.colSpan = colSpan;
+
+    const fmtNum = v => v !== null && v !== undefined ? +v.toPrecision(2) : '—';
+    const fmtRcr = v => {
+        if (v === null || v === undefined) return null;
+        const pct = v * 100;
+        return (pct < 1 ? pct.toPrecision(2) : Math.round(pct)) + '%';
+    };
+
+    // ── (2) Health: RCR as % of limit ────────────────────────────────────────
+    const s2a = r.s2a;
+
+    // H-code sets mirroring INH_CODES and DERM_CODES ∪ EYE_CODES in ssbd_scoring.js
+    const INH_HZ = ['EUH071','EUH208','EUH380','EUH381',
+        'H304','H305','H330','H331','H332','H334','H335','H336',
+        'H340','H341','H350','H351','H360','H361','H370','H371','H372','H373'];
+    const DERM_EYE_HZ = ['EUH066','EUH208','EUH270','EUH380','EUH381',
+        'H310','H311','H312','H314','H315','H317','H318','H319','H320',
+        'H340','H341','H350','H351','H360','H361','H370','H371','H372','H373','H400'];
+    const hcHaz = c => (s[c] || '').trim().toUpperCase() === 'Y';
+    const hasInhalHaz   = INH_HZ.some(hcHaz);
+    const hasDermEyeHaz = DERM_EYE_HZ.some(hcHaz);
+
+    const absent = txt => `<div class="dl-row" style="margin:1px 0;"><span style="color:#aaa;font-style:italic;font-size:11px;">${txt}</span></div>`;
+
+    const rcrRows = [];
+    // LT inhalation
+    if (s2a.rcr_lt !== null) {
+        rcrRows.push(`<div class="dl-row"><span class="k">LT inhal. (% of limit)</span><span class="v">${fmtRcr(s2a.rcr_lt)}</span></div>${rcrBar(s2a.rcr_lt)}`);
+    } else if (s2a.lim_lt !== undefined) {
+        rcrRows.push(absent(hasInhalHaz ? 'LT inhal.: no OEL or DNEL available' : 'LT inhal.: no inhalation hazard identified'));
+    }
+    // ST inhalation
+    if (s2a.rcr_st !== null) {
+        rcrRows.push(`<div class="dl-row"><span class="k">ST inhal. (% of limit)</span><span class="v">${fmtRcr(s2a.rcr_st)}</span></div>${rcrBar(s2a.rcr_st)}`);
+    } else if (s2a.lim_st !== undefined) {
+        rcrRows.push(absent(hasInhalHaz ? 'ST inhal.: no OEL or DNEL available' : 'ST inhal.: no inhalation hazard identified'));
+    }
+    // Dermal
+    if (s2a.rcr_d !== null) {
+        rcrRows.push(`<div class="dl-row"><span class="k">Dermal (% of limit)</span><span class="v">${fmtRcr(s2a.rcr_d)}</span></div>${rcrBar(s2a.rcr_d)}`);
+    } else if (s2a.dnel_d !== undefined) {
+        rcrRows.push(absent(hasDermEyeHaz ? 'Dermal: no DNEL available' : 'Dermal: no dermal/eye hazard identified'));
+    }
+
+    const healthRows = rcrRows.length
+        ? rcrRows.join('')
+        : absent(s2a.fug === null ? 'No exposure estimate — vapour pressure data unavailable' : 'No exposure data available for this process type');
+
+    // ── (3) Safety: H2xx codes active on this solvent ────────────────────────
+    const H2XX_CODES = ['EUH019',
+                        'H224','H225','H226','H227','H228','H229',
+                        'H240','H241','H242','H250','H251','H252',
+                        'H260','H261','H270','H271','H272','H280','H281','H290'];
+    const activeH2xx = H2XX_CODES.filter(c => (s[c] || '').trim().toUpperCase() === 'Y');
+
+    // ── (4) Environment: stacked bar + fate-matched data ─────────────────────
+    const airPct  = parseFloat(s['Air /%']);
+    const watPct  = parseFloat(s['Water /%']);
+    const soilPct = parseFloat(s['Soil /%']);
+    const sedPct  = parseFloat(s['Sediment /%']);
+    const hasFate = !isNaN(airPct) && !isNaN(watPct) && !isNaN(soilPct) && !isNaN(sedPct);
+
+    const fate         = r.s3.fate;
+    const fateAir      = ['air','mostly_air','air_and_water','air_and_soil'].includes(fate);
+    const fateWater    = ['water','mostly_water','air_and_water','soil_and_water'].includes(fate);
+    const soilSedOnly  = !fateAir && !fateWater && r.s3.score === 2;  // B rank, soil/sed or unknown fate
+    const showBoth     = !fateAir && !fateWater && !soilSedOnly;
+
+    let barHtml = '';
+    if (hasFate) {
+        const tot = airPct + watPct + soilPct + sedPct || 100;
+        const aW = (airPct/tot*100).toFixed(1), wW = (watPct/tot*100).toFixed(1);
+        const sW = (soilPct/tot*100).toFixed(1), sdW = (sedPct/tot*100).toFixed(1);
+        barHtml = `
+            <div class="dl-row" style="margin-bottom:3px;"><span class="k">Environmental partition</span></div>
+            <div style="margin:0 0 2px;">
+                <div style="display:flex;height:14px;border-radius:3px;overflow:hidden;font-size:0;">
+                    <div style="width:${aW}%;background:#87ceeb;" title="Air ${airPct}%"></div>
+                    <div style="width:${wW}%;background:#2980b9;" title="Water ${watPct}%"></div>
+                    <div style="width:${sW}%;background:#8b6914;" title="Soil ${soilPct}%"></div>
+                    <div style="width:${sdW}%;background:#4a3000;" title="Sediment ${sedPct}%"></div>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;font-size:10px;color:#666;">
+                    <span><span style="display:inline-block;width:8px;height:8px;border-radius:1px;background:#87ceeb;margin-right:2px;vertical-align:middle;"></span>Air ${airPct}%</span>
+                    <span><span style="display:inline-block;width:8px;height:8px;border-radius:1px;background:#2980b9;margin-right:2px;vertical-align:middle;"></span>Water ${watPct}%</span>
+                    <span><span style="display:inline-block;width:8px;height:8px;border-radius:1px;background:#8b6914;margin-right:2px;vertical-align:middle;"></span>Soil ${soilPct}%</span>
+                    <span><span style="display:inline-block;width:8px;height:8px;border-radius:1px;background:#4a3000;margin-right:2px;vertical-align:middle;"></span>Sed. ${sedPct}%</span>
+                </div>
+            </div>`;
+    } else {
+        barHtml = '<div style="color:#aaa;font-size:11px;font-style:italic;margin:4px 0;">No fate partition data</div>';
+    }
+
+    let envRows = '';
+    if (soilSedOnly) {
+        envRows += `<div class="dl-row" style="margin:4px 0;"><span style="color:#8b6914;font-style:italic;font-size:12px;">Impact on soil and sediment not understood.</span></div>`;
+    }
+    if (!soilSedOnly && (fateAir || showBoth)) {
+        envRows += `<div class="dl-row"><span class="k">Atm. t½</span><span class="v">${r.s3.halflife !== null ? r.s3.halflife+' d' : '—'}</span></div>`;
+        envRows += halflifeBar(r.s3.halflife);
+    }
+    if (!soilSedOnly && (fateWater || showBoth)) {
+        envRows += `<div class="dl-row"><span class="k">Persistence</span><span class="v" style="max-width:120px;">${s['Biodegradation in water'] || '—'}</span></div>`;
+        envRows += `<div class="dl-row"><span class="k">Bioaccumulation</span><span class="v">${r.s3.bcf !== null ? r.s3.bcf+' L/kg' : '—'}</span></div>`;
+        envRows += bcfBar(r.s3.bcf);
+        envRows += `<div class="dl-row"><span class="k">Ecotoxicity</span><span class="v">${r.s3.noec !== null ? r.s3.noec+' mg/L' : '—'}</span></div>`;
+        envRows += noecBar(r.s3.noec);
+        const ECO_HCODES = ['H400','H410','H411','H412','H314','H340','H350','H360','H361','H372','H373'];
+        const activeEcoH = ECO_HCODES.filter(c => (s[c] || '').trim().toUpperCase() === 'Y');
+        if (activeEcoH.length) {
+            envRows += `<div class="dl-row"><span class="k">H codes</span><span class="v">${activeEcoH.join(', ')}</span></div>`;
+        }
+    }
+    const pbtDisplay = r.s3.tag || 'false';
+    const pbtColor = r.s3.tag ? '#c0392b' : '#27ae60';
+    envRows += `<div class="dl-row" style="margin-top:4px;"><span class="k" style="font-weight:600;">PBT/vPvB</span><span class="v" style="color:${pbtColor};font-weight:700;">${pbtDisplay}</span></div>`;
+
+    // ── (5) Sustainability: CC and Water only ────────────────────────────────
+    const s4 = r.s4;
+    const ccC2g   = s4.cc_c2g !== null ? fmtNum(s4.cc_c2g) : 'No data';
+    const ccTotal = s4.cc !== null && s4.m_kg !== null ? fmtNum(s4.cc * s4.m_kg)
+                  : s4.cc !== null ? fmtNum(s4.cc)+' /kg' : 'No data';
+    const wuC2g   = s4.wu_c2g !== null ? fmtNum(s4.wu_c2g) : 'No data';
+    const wuTotal = s4.wu !== null && s4.m_kg !== null ? fmtNum(s4.wu * s4.m_kg)
+                  : s4.wu !== null ? fmtNum(s4.wu)+' /kg' : 'No data';
+
+    td.innerHTML = `<div class="detail-inner">
+    <div class="detail-grid">
+
+        <div class="detail-card">
+            <h4>Health risk ${SSBD.badge(s2a.score)}</h4>
+            <div class="dl">${healthRows}</div>
+        </div>
+
+        <div class="detail-card">
+            <h4>Safety ${SSBD.badge(r.s2b.score)}</h4>
+            <div class="dl">
+                <div class="dl-row"><span class="k">Flash point</span><span class="v">${r.s2b.fp !== null && r.s2b.fp !== undefined ? r.s2b.fp+' °C' : '—'}</span></div>
+                ${flashPointBar(r.s2b.fp)}
+                <div class="dl-row"><span class="k">Boiling point</span><span class="v">${r.s2b.bp !== null && r.s2b.bp !== undefined ? r.s2b.bp+' °C' : '—'}</span></div>
+                <div class="dl-row"><span class="k">Classification</span><span class="v" style="max-width:150px;">${r.s2b.label}</span></div>
+                ${activeH2xx.length ? `<div class="dl-row"><span class="k">H2xx codes</span><span class="v">${activeH2xx.join(', ')}</span></div>` : ''}
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <h4>Environment ${SSBD.badge(r.s3.score)}${rWC ? unknownRiskLabel(r.s3.score, rWC.s3.score) : ''}</h4>
+            ${barHtml}
+            <div class="dl">${envRows}</div>
+        </div>
+
+        <div class="detail-card">
+            <h4>Sustainability ${SSBD.badge(s4.score)}</h4>
+            <div class="dl">
+                <div class="dl-row"><span class="k" style="max-width:75%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">CC (cradle-to-gate) /kg CO₂-eq per kg</span><span class="v">${ccC2g}</span></div>
+                <div class="dl-row"><span class="k" style="max-width:75%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">CC (total) /kg CO₂-eq</span><span class="v">${ccTotal}</span></div>
+            </div>
+            ${sustainBar(s4.cc !== null && s4.m_kg !== null ? s4.cc * s4.m_kg : s4.cc, ccRange, s4.ccThresholds || [25, 100, 250, 500], 'kg CO₂-eq', { logScale: true, extraTicks: [] })}
+            <div class="dl">
+                <div class="dl-row"><span class="k" style="max-width:75%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Water (cradle-to-gate) /L per kg</span><span class="v">${wuC2g}</span></div>
+                <div class="dl-row"><span class="k" style="max-width:75%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Water (total) /L</span><span class="v">${wuTotal}</span></div>
+            </div>
+            ${sustainBar(s4.wu !== null && s4.m_kg !== null ? s4.wu * s4.m_kg : s4.wu, wuRange, s4.wuThresholds || [100, 1000, 5000, 10000], 'L', { logScale: true, extraTicks: [] })}
+        </div>
+
+        <div class="detail-card">
+            <h4>Conversion — ${state.reaction || '—'}</h4>
+            ${convChart(s, state)}
+        </div>
+
+    </div>
+    </div>`;
+
+    detailTr.appendChild(td);
+    return detailTr;
+}
+
+// ── Sort on header click ──────────────────────────────────────────────────
+document.querySelectorAll('table.ssbd-table th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+        const col = th.dataset.col;
+        if (sortCol === col) sortAsc = !sortAsc;
+        else { sortCol = col; sortAsc = true; }
+        renderTable();
+    });
+});
+
+// ── Filter on search input ────────────────────────────────────────────────
+document.getElementById('search-input').addEventListener('input', function () {
+    filterText = this.value;
+    renderTable();
+});
+
+// ── Unknown risks toggle ──────────────────────────────────────────────────
+const _showUnknownToggle = document.getElementById('show-unknown-toggle');
+_showUnknownToggle.checked = showUnknownRisks;
+_showUnknownToggle.addEventListener('change', function () {
+    showUnknownRisks = this.checked;
+    localStorage.setItem('ssgShowUnknownRisks', showUnknownRisks);
+    renderTable();
+});
+
+// ── Show/hide CHEM21 columns toggle ──────────────────────────────────────
+const _ssbdTable = document.querySelector('table.ssbd-table');
+const _showC21Toggle = document.getElementById('show-c21-toggle');
+_showC21Toggle.checked = localStorage.getItem('ssgShowC21') !== 'false';
+_ssbdTable.classList.toggle('hide-c21', !_showC21Toggle.checked);
+_showC21Toggle.addEventListener('change', function () {
+    _ssbdTable.classList.toggle('hide-c21', !this.checked);
+    localStorage.setItem('ssgShowC21', this.checked);
+});
+
+// ── Class filter buttons ──────────────────────────────────────────────────
+document.querySelectorAll('.class-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const val = this.dataset.classes;
+        classFilter = val ? val.split(',') : null;
+        renderTable();
+    });
+});
+
+renderBanner();
+renderTable();
+</script>
+</body>
+</html>

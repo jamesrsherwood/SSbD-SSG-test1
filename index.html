@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SSbD SSG – Data Entry</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <style>
+        /* ── Two-column layout ────────────────────────────────────────── */
+        .interface-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 4fr) minmax(0, 2fr);
+            gap: 24px;
+            align-items: start;
+        }
+        .interface-grid > div { min-width: 0; }
+        @media (max-width: 900px) {
+            .interface-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── Section cards ────────────────────────────────────────────── */
+        .section {
+            background: #f8f8f8;
+            border: 1px solid #556B2F;
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+        .section h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #444;
+            border-bottom: 1px solid #556B2F;
+            padding-bottom: 6px;
+        }
+
+        /* ── Form rows ────────────────────────────────────────────────── */
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .form-row label {
+            flex: 0 0 150px;
+            color: #444;
+        }
+        .form-row input,
+        .form-row select {
+            flex: 1;
+            min-width: 0;
+            padding: 4px 6px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+        .form-row .unit {
+            flex: 0 0 auto;
+            color: #888;
+            font-size: 12px;
+        }
+        .form-row input[type="checkbox"] {
+            flex: 0 0 auto;
+            width: 16px;
+            height: 16px;
+        }
+        .hint {
+            font-size: 11px;
+            color: #888;
+            margin: -4px 0 8px 158px;
+        }
+
+        /* ── Chemicals table ──────────────────────────────────────────── */
+        table.chem-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+        table.chem-table th {
+            text-align: left;
+            font-weight: 600;
+            padding: 4px 6px;
+            background: #f0f0f0;
+            border-bottom: 1px solid #ccc;
+        }
+        table.chem-table td {
+            padding: 3px 4px;
+        }
+        table.chem-table td input {
+            width: 100%;
+            padding: 3px 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 13px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        table.chem-table td.row-label {
+            color: #666;
+            padding-right: 8px;
+            white-space: nowrap;
+        }
+
+        /* ── Functional groups grid ───────────────────────────────────── */
+        .fg-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 16px;
+        }
+        .fg-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+        .fg-item input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        /* ── Property range rows ──────────────────────────────────────── */
+        .prop-row {
+            display: grid;
+            grid-template-columns: 16px 120px 1fr 1fr;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        .prop-row input[type="number"] {
+            padding: 3px 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 13px;
+            font-family: inherit;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .prop-row .prop-label { color: #444; }
+
+        /* ── Save bar ─────────────────────────────────────────────────── */
+        .save-bar {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 1px solid #ddd;
+            padding: 12px 0;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        #save-status {
+            font-size: 12px;
+            color: green;
+            display: none;
+        }
+
+        /* ── Reference solvent dropdown ───────────────────────────────── */
+        .ref-solvent-wrap { position: relative; flex: 1; min-width: 0; }
+        .ref-solvent-wrap input { width: 100%; box-sizing: border-box; }
+        .ref-dd {
+            display: none;
+            position: absolute;
+            top: 100%; left: 0; right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 3px 3px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 200;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+        .ref-dd.open { display: block; }
+        .ref-dd-item {
+            padding: 5px 8px;
+            font-size: 13px;
+            cursor: pointer;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .ref-dd-item:last-child { border-bottom: none; }
+        .ref-dd-item:hover, .ref-dd-item.active { background: #f0f0f0; }
+        .ref-dd-item em { font-style: normal; font-weight: 600; color: #444; }
+        .ref-dd-none { padding: 5px 8px; font-size: 12px; color: #888; }
+        .ref-dd-alt { font-size: 11px; color: #888; }
+    </style>
+</head>
+
+<body>
+<div class="navbar">
+    <a href="index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+        <img src="logo.svg" alt="SSbD SSG logo" style="height:36px;width:36px;border-radius:3px;">
+        <strong style="color:white;">SSbD SSG</strong>
+    </a>
+    <div>
+        <a href="index.html">Home</a>
+        <a href="database.html">Database</a>
+        <a href="ssbd.html">SSbD</a>
+        <a href="guide.html">Guide</a>
+        <a href="about.html">About</a>
+    </div>
+</div>
+
+<div class="page-content" style="max-width:1100px;">
+    <h2 style="margin-bottom:20px;">Data entry</h2>
+
+    <form id="interface-form" autocomplete="off">
+    <div class="interface-grid">
+
+        <!-- ════════════════════════════════════════════════════════════
+             LEFT COLUMN — How are you making it?
+        ════════════════════════════════════════════════════════════ -->
+        <div>
+            <h2 style="font-size:16px; color:#556B2F; margin:0 0 16px;">Process conditions and requirments</h2>
+
+            <!-- Reaction type -->
+            <div class="section">
+                <h3>Reaction</h3>
+                <div class="form-row">
+                    <label for="reaction">Reaction type</label>
+                    <select id="reaction" name="reaction"></select>
+                </div>
+                <div class="form-row">
+                    <label for="ref-solvent">Reference solvent</label>
+                    <div class="ref-solvent-wrap">
+                        <input type="text" id="ref-solvent" name="ref-solvent"
+                               placeholder="e.g. Ethanol" autocomplete="off">
+                        <div id="ref-dd" class="ref-dd"></div>
+                    </div>
+                </div>
+                <div class="hint">Current solvent to compare against in the database view</div>
+            </div>
+
+            <!-- Chemicals -->
+            <div class="section">
+                <h3 style="display:flex; justify-content:space-between; align-items:center;">
+                    Chemicals
+                    <label style="font-size:12px; text-transform:none; letter-spacing:normal; color:#666; font-weight:normal; cursor:pointer;">
+                        <input type="checkbox" id="chemicalsAutofill" name="chemicalsAutofill" style="width:auto; height:auto; margin-right:4px; vertical-align:middle;">
+                        Autofill from reaction
+                    </label>
+                </h3>
+                <table class="chem-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Reactants (name)</th>
+                            <th>RMM</th>
+                            <th>Initial conc. /M</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="row-label">[A]</td>
+                            <td><input type="text"   id="rx-name" name="rx-name" placeholder="name"></td>
+                            <td><input type="number" id="rx-rmm"  name="rx-rmm"  min="0" step="any" placeholder="RMM"></td>
+                            <td><input type="number" id="rx-conc" name="rx-conc" min="0" step="any" placeholder="[A]₀"></td>
+                        </tr>
+                        <tr>
+                            <td class="row-label">[B]</td>
+                            <td><input type="text"   id="ry-name" name="ry-name" placeholder="name"></td>
+                            <td><input type="number" id="ry-rmm"  name="ry-rmm"  min="0" step="any" placeholder="RMM"></td>
+                            <td><input type="number" id="ry-conc" name="ry-conc" min="0" step="any" placeholder="[B]₀"></td>
+                        </tr>
+                        <tr>
+                            <td class="row-label">[C]</td>
+                            <td><input type="text"   id="rz-name" name="rz-name" placeholder="name (optional)"></td>
+                            <td><input type="number" id="rz-rmm"  name="rz-rmm"  min="0" step="any" placeholder="RMM"></td>
+                            <td><input type="number" id="rz-conc" name="rz-conc" min="0" step="any" placeholder="[C]₀"></td>
+                        </tr>
+                        <tr style="border-top:1px solid #ddd;">
+                            <td class="row-label">P</td>
+                            <td><input type="text"   id="prod-name" name="prod-name" placeholder="Product name"></td>
+                            <td><input type="number" id="prod-rmm"  name="prod-rmm"  min="0" step="any" placeholder="RMM"></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="row-label">Other</td>
+                            <td><input type="text"   id="other-name" name="other-name" placeholder="Other reagents"></td>
+                            <td><input type="number" id="other-mass" name="other-mass" min="0" step="any" placeholder="Combined mass /kg"></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="text-align:right; margin-top:4px;">
+                    <button type="button" class="hover-btn" style="background:#888; font-size:12px; padding:3px 10px;" onclick="clearChemicals()">Clear</button>
+                </div>
+            </div>
+
+            <!-- Process -->
+            <div class="section">
+                <h3>Process</h3>
+                <div class="form-row">
+                    <label for="processType">Type of process</label>
+                    <select id="processType" name="processType"></select>
+                </div>
+                <div class="form-row">
+                    <label for="scale">Reactor size (batch)</label>
+                    <select id="scale" name="scale">
+                        <option value="100">100 L</option>
+                        <option value="500">500 L</option>
+                        <option value="1000">1000 L</option>
+                        <option value="5000">5000 L</option>
+                        <option value="10000">10000 L</option>
+                    </select>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 8px;margin-bottom:4px;">
+                    <div>
+                        <div style="font-size:12px;color:#666;margin-bottom:2px;">Process temperature</div>
+                        <div style="display:flex;gap:4px;align-items:center;">
+                            <input type="number" id="processTemp" name="processTemp" step="any" placeholder="default 25" style="flex:1;min-width:0;padding:4px 6px;border:1px solid #ccc;border-radius:3px;font-size:13px;font-family:inherit;">
+                            <span class="unit">°C</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;color:#666;margin-bottom:2px;">Reaction time</div>
+                        <div style="display:flex;gap:4px;align-items:center;">
+                            <input type="number" id="reactionTime" name="reactionTime" min="0" step="any" style="flex:1;min-width:0;padding:4px 6px;border:1px solid #ccc;border-radius:3px;font-size:13px;font-family:inherit;">
+                            <span class="unit">hr</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hint" style="margin-left:0;">Leave blank to use the default temperature</div>
+            </div>
+
+            <!-- Risk scenario -->
+            <div class="section">
+                <h3>Risk scenario</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 8px;margin-bottom:8px;">
+                    <div>
+                        <div style="font-size:12px;color:#666;margin-bottom:2px;">Temperature for exposure</div>
+                        <select id="exposureTemp" name="exposureTemp" style="width:100%;padding:4px 6px;border:1px solid #ccc;border-radius:3px;font-size:13px;font-family:inherit;"></select>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;color:#666;margin-bottom:2px;">Exposure time</div>
+                        <select id="exposureTime" name="exposureTime" style="width:100%;padding:4px 6px;border:1px solid #ccc;border-radius:3px;font-size:13px;font-family:inherit;"></select>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 8px;margin-bottom:8px;">
+                    <div>
+                        <div style="font-size:12px;color:#666;margin-bottom:2px;">General ventilation</div>
+                        <select id="ventilation" name="ventilation" style="width:100%;padding:4px 6px;border:1px solid #ccc;border-radius:3px;font-size:13px;font-family:inherit;"></select>
+                    </div>
+                    <div style="display:flex;align-items:flex-end;padding-bottom:5px;gap:6px;">
+                        <input type="checkbox" id="lev" name="lev" style="width:15px;height:15px;flex-shrink:0;">
+                        <label for="lev" style="font-size:13px;color:#444;cursor:pointer;">Local exhaust ventilation (LEV)</label>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 8px;margin-bottom:8px;">
+                    <div>
+                        <div style="font-size:12px;color:#666;margin-bottom:2px;">Respiratory protection (RPE)</div>
+                        <select id="rpe" name="rpe" style="width:100%;padding:4px 6px;border:1px solid #ccc;border-radius:3px;font-size:13px;font-family:inherit;"></select>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;color:#666;margin-bottom:2px;">Personal protection (PPE)</div>
+                        <select id="ppe" name="ppe" style="width:100%;padding:4px 6px;border:1px solid #ccc;border-radius:3px;font-size:13px;font-family:inherit;"></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Utilities & waste + Impact — side by side -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 10px;align-items:start;margin-bottom:18px;min-width:0;">
+                <div class="section" style="margin-bottom:0;min-width:0;overflow:hidden;">
+                    <h3>Utilities &amp; waste</h3>
+                    <div class="form-row" style="flex-wrap:wrap;">
+                        <label for="endOfLife" style="flex:0 0 100%;font-size:12px;color:#666;">End-of-life</label>
+                        <select id="endOfLife" name="endOfLife" style="flex:1;min-width:0;"></select>
+                    </div>
+                    <div class="form-row" style="flex-wrap:wrap;">
+                        <label for="distillationRecovery" style="flex:0 0 100%;font-size:12px;color:#666;">Distillation recovery</label>
+                        <input type="number" id="distillationRecovery" name="distillationRecovery" min="0" max="100" step="any" style="flex:1;min-width:0;">
+                        <span class="unit">%</span>
+                    </div>
+                </div>
+                <div class="section" style="margin-bottom:0;min-width:0;overflow:hidden;">
+                    <h3>Impact</h3>
+                    <div class="form-row" style="flex-wrap:wrap;">
+                        <label for="energyIntensity" style="flex:0 0 100%;font-size:12px;color:#666;">Energy carbon intensity</label>
+                        <select id="energyIntensity" name="energyIntensity" style="flex:1;min-width:0;"></select>
+                    </div>
+                    <div class="form-row" style="flex-wrap:wrap;">
+                        <label for="climateChange" style="flex:0 0 100%;font-size:12px;color:#666;">Climate change (upstream)</label>
+                        <input type="number" id="climateChange" name="climateChange" min="0" step="any" style="flex:1;min-width:0;">
+                        <span class="unit" style="flex:0 0 auto;">kg CO₂-eq</span>
+                    </div>
+                    <div class="form-row" style="flex-wrap:wrap;">
+                        <label for="freshwaterUse" style="flex:0 0 100%;font-size:12px;color:#666;">Freshwater use (upstream)</label>
+                        <input type="number" id="freshwaterUse" name="freshwaterUse" min="0" step="any" style="flex:1;min-width:0;">
+                        <span class="unit" style="flex:0 0 auto;">L</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Physical property filters -->
+            <div class="section">
+                <h3>Physical property filters</h3>
+                <div style="display:grid; grid-template-columns:16px 120px 1fr 1fr; gap:4px 6px; align-items:center; font-size:12px; color:#888; margin-bottom:6px; padding:0 2px;">
+                    <span></span><span></span><span>Min</span><span>Max</span>
+                </div>
+                <!-- Each row: checkbox | label | min input | max input -->
+                <div class="prop-row">
+                    <input type="checkbox" id="prop-mp-en" name="prop-mp-en">
+                    <span class="prop-label">Melting point (°C)</span>
+                    <input type="number" id="prop-mp-min" name="prop-mp-min" step="any">
+                    <input type="number" id="prop-mp-max" name="prop-mp-max" step="any">
+                </div>
+                <div class="prop-row">
+                    <input type="checkbox" id="prop-bp-en" name="prop-bp-en">
+                    <span class="prop-label">Boiling point (°C)</span>
+                    <input type="number" id="prop-bp-min" name="prop-bp-min" step="any">
+                    <input type="number" id="prop-bp-max" name="prop-bp-max" step="any">
+                </div>
+                <div class="prop-row">
+                    <input type="checkbox" id="prop-den-en" name="prop-den-en">
+                    <span class="prop-label">Density (g/mL)</span>
+                    <input type="number" id="prop-den-min" name="prop-den-min" step="any">
+                    <input type="number" id="prop-den-max" name="prop-den-max" step="any">
+                </div>
+                <div class="prop-row">
+                    <input type="checkbox" id="prop-vis-en" name="prop-vis-en">
+                    <span class="prop-label">Viscosity (cP)</span>
+                    <input type="number" id="prop-vis-min" name="prop-vis-min" min="0" step="any">
+                    <input type="number" id="prop-vis-max" name="prop-vis-max" min="0" step="any">
+                </div>
+                <div class="prop-row">
+                    <input type="checkbox" id="prop-st-en" name="prop-st-en">
+                    <span class="prop-label">Surface tension (mN/m)</span>
+                    <input type="number" id="prop-st-min" name="prop-st-min" step="any">
+                    <input type="number" id="prop-st-max" name="prop-st-max" step="any">
+                </div>
+                <div class="prop-row">
+                    <input type="checkbox" id="prop-fp-en" name="prop-fp-en">
+                    <span class="prop-label">Flash point (°C)</span>
+                    <input type="number" id="prop-fp-min" name="prop-fp-min" step="any">
+                    <span></span>
+                </div>
+                <div class="prop-row">
+                    <input type="checkbox" id="prop-af-en" name="prop-af-en">
+                    <span class="prop-label">Autoflammability (°C)</span>
+                    <input type="number" id="prop-af-min" name="prop-af-min" step="any">
+                    <span></span>
+                </div>
+                <div class="prop-row">
+                    <input type="checkbox" id="prop-bio-en" name="prop-bio-en">
+                    <span class="prop-label">Bio-based content (%)</span>
+                    <input type="number" id="prop-bio-min" name="prop-bio-min" min="0" max="100" step="1" oninput="if(this.value!=='')this.value=Math.min(100,Math.max(0,Math.round(+this.value)))">
+                    <span>%</span>
+                </div>
+            </div>
+
+        </div><!-- end left column -->
+
+
+        <!-- ════════════════════════════════════════════════════════════
+             RIGHT COLUMN — What solvents are you using?
+        ════════════════════════════════════════════════════════════ -->
+        <div>
+            <h2 style="font-size:16px; color:#556B2F; margin:0 0 16px;">Solvent characteristics</h2>
+
+            <!-- Hazard categories -->
+            <div class="section">
+                <h3>Hazard categories to permit</h3>
+                <div class="form-row">
+                    <input type="checkbox" id="hz-chronic"   name="hz-chronic">
+                    <label for="hz-chronic" style="flex:1;">Chronic toxicity</label>
+                </div>
+                <div class="hint" style="margin-left:24px;">CMR (H340, H350, H360) or specific target organ toxicity (H372)</div>
+                <div class="form-row">
+                    <input type="checkbox" id="hz-suspected" name="hz-suspected">
+                    <label for="hz-suspected" style="flex:1;">Suspected chronic toxicity</label>
+                </div>
+                <div class="hint" style="margin-left:24px;">Suspected CMR (H341, H351, H361) or specific target organ toxicity (H373)</div>
+                <div class="form-row">
+                    <input type="checkbox" id="hz-acute"     name="hz-acute">
+                    <label for="hz-acute" style="flex:1;">Acute toxicity</label>
+                </div>
+                <div class="hint" style="margin-left:24px;">Acute toxicity (H300, H310, H330) or STOT single exposure (H370, H371)</div>
+                <div class="form-row">
+                    <input type="checkbox" id="hz-pbt"       name="hz-pbt">
+                    <label for="hz-pbt" style="flex:1;">Environmental PBT</label>
+                </div>
+                <div class="hint" style="margin-left:24px;">PBT or vPvB (very persistent and very bioaccumulating)</div>
+                <div class="form-row">
+                    <input type="checkbox" id="hz-envtox"    name="hz-envtox">
+                    <label for="hz-envtox" style="flex:1;">Environmental toxicity</label>
+                </div>
+                <div class="hint" style="margin-left:24px;">Chronic environmental toxicity (H410, H411) or ozone layer hazard (H420/EUH059)</div>
+            </div>
+
+            <!-- Functional groups -->
+            <div class="section">
+                <h3>Compatible functional groups</h3>
+                <div class="fg-grid">
+                    <div class="fg-item"><input type="checkbox" id="fg-acid"      name="fg-acid">      <label for="fg-acid">Acid</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-ester"     name="fg-ester">     <label for="fg-ester">Ester</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-alcohol"   name="fg-alcohol">   <label for="fg-alcohol">Alcohol (monofunctional)</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-ether"     name="fg-ether">     <label for="fg-ether">Ether</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-aromatic"  name="fg-aromatic">  <label for="fg-aromatic">Aromatic hydrocarbon</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-ketone"    name="fg-ketone">    <label for="fg-ketone">Ketone &amp; carbonate</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-chlor"     name="fg-chlor">     <label for="fg-chlor">Chlorinated</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-multi"     name="fg-multi">     <label for="fg-multi">Multifunctional</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-amide"     name="fg-amide">     <label for="fg-amide">Amide</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-inorganic" name="fg-inorganic"> <label for="fg-inorganic">Inorganic</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-amine"     name="fg-amine">     <label for="fg-amine">Amine</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-ionic"     name="fg-ionic">     <label for="fg-ionic">Ionic liquid</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-aliph"     name="fg-aliph">     <label for="fg-aliph">Aliphatic hydrocarbon</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-eutectic"  name="fg-eutectic">  <label for="fg-eutectic">Eutectic mixture</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-hetero"    name="fg-hetero">    <label for="fg-hetero">Other heteroatom (N, P…)</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-othhal"    name="fg-othhal">    <label for="fg-othhal">Other halogenated</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-fluor"     name="fg-fluor">     <label for="fg-fluor">Perfluorinated</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-polyol"    name="fg-polyol">    <label for="fg-polyol">Polyol</label></div>
+                    <div class="fg-item"><input type="checkbox" id="fg-silox"     name="fg-silox">     <label for="fg-silox">Siloxane</label></div>
+                </div>
+            </div>
+
+            <!-- Polarity -->
+            <div class="section">
+                <h3>Polarity</h3>
+                <div class="form-row">
+                    <input type="checkbox" id="polarityDataOnly" name="polarityDataOnly">
+                    <label for="polarityDataOnly" style="flex:1;">Only include solvents with polarity data?</label>
+                </div>
+                <div class="form-row" style="margin-top:8px;">
+                    <input type="checkbox" id="refineByPolarity" name="refineByPolarity">
+                    <label for="refineByPolarity" style="flex:1;">Refine candidates by polarity?</label>
+                </div>
+                <div id="polarity-inputs" style="margin-top:8px; padding-left:24px;">
+                    <div class="form-row">
+                        <label for="polarityD" style="flex:0 0 120px;">D (dispersion)</label>
+                        <input type="number" id="polarityD" name="polarityD" step="any">
+                        <span class="unit">MPa½</span>
+                    </div>
+                    <div class="form-row">
+                        <label for="polarityP" style="flex:0 0 120px;">P (dipole)</label>
+                        <input type="number" id="polarityP" name="polarityP" step="any">
+                        <span class="unit">MPa½</span>
+                    </div>
+                    <div class="form-row">
+                        <label for="polarityH" style="flex:0 0 120px;">H (H-bonding)</label>
+                        <input type="number" id="polarityH" name="polarityH" step="any">
+                        <span class="unit">MPa½</span>
+                    </div>
+                    <div class="form-row">
+                        <label for="polarityRadius" style="flex:0 0 120px;">Target radius</label>
+                        <input type="number" id="polarityRadius" name="polarityRadius" min="0" step="any">
+                        <span class="unit">MPa½</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Solvent set & state -->
+            <div class="section">
+                <h3>Solvent set &amp; state</h3>
+                <div class="form-row">
+                    <label for="solventSet">Solvent set</label>
+                    <select id="solventSet" name="solventSet"></select>
+                </div>
+                <div style="margin-top:8px; font-size:13px; color:#444;">State at room temperature</div>
+                <div style="display:flex; gap:16px; margin-top:4px; padding-left:4px;">
+                    <label class="fg-item"><input type="checkbox" id="stateSolid"  name="stateSolid">  Solid</label>
+                    <label class="fg-item"><input type="checkbox" id="stateLiquid" name="stateLiquid"> Liquid</label>
+                    <label class="fg-item"><input type="checkbox" id="stateGas"    name="stateGas">    Gas</label>
+                </div>
+                <div class="form-row" style="margin-top:8px;">
+                    <input type="checkbox" id="reachOnly" name="reachOnly">
+                    <label for="reachOnly" style="flex:1;">REACH registered solvents only?</label>
+                </div>
+            </div>
+
+
+        </div><!-- end right column -->
+    </div><!-- end interface-grid -->
+
+    <!-- Save / Reset bar -->
+    <div class="save-bar">
+        <button type="button" class="hover-btn" onclick="onSave()">Save settings</button>
+        <button type="button" class="hover-btn" style="background:#888;" onclick="onReset()">Reset to defaults</button>
+        <span id="save-status">&#10003; Saved</span>
+    </div>
+
+    </form><!-- end interface-form -->
+</div><!-- end page-content -->
+
+<script src="appData.js"></script>
+<script src="state.js"></script>
+<script src="solventData.js"></script>
+<script>
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function populateSelect(id, options, valueKey, labelKey) {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    options.forEach(opt => {
+        const o = document.createElement('option');
+        if (typeof opt === 'object') {
+            o.value = opt[valueKey || 'id'];
+            o.textContent = opt[labelKey || 'label'];
+        } else {
+            o.value = opt;
+            o.textContent = opt;
+        }
+        sel.appendChild(o);
+    });
+}
+
+function setVal(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === 'checkbox') {
+        el.checked = Boolean(value);
+    } else {
+        el.value = (value === null || value === undefined) ? '' : value;
+    }
+}
+
+function getVal(id) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    if (el.type === 'checkbox') return el.checked;
+    const v = el.value;
+    if (el.type === 'number') return v === '' ? null : parseFloat(v);
+    return v;
+}
+
+// ── Reference solvent custom dropdown ─────────────────────────────────────
+
+let _refNames = [];   // {name, alts} sorted by canonical name
+
+_refNames = SOLVENT_DATA.map(s => ({
+    name: s['Name'],
+    cas:  (s['CAS'] || '').trim(),
+    alts: [s['altName1'], s['altName2'], s['altName3']].filter(a => a && a.trim()),
+})).sort((a, b) =>
+    a.name.toLowerCase() < b.name.toLowerCase() ? -1 : a.name.toLowerCase() > b.name.toLowerCase() ? 1 : 0
+);
+
+(function () {
+    const inp  = document.getElementById('ref-solvent');
+    const dd   = document.getElementById('ref-dd');
+    let activeIdx = -1;
+
+    function highlight(text, q) {
+        const i = text.toLowerCase().indexOf(q);
+        if (i < 0) return text;
+        return text.slice(0, i) + '<em>' + text.slice(i, i + q.length) + '</em>' + text.slice(i + q.length);
+    }
+
+    function matchesQuery(entry, q) {
+        if (entry.name.toLowerCase().includes(q)) return true;
+        if (entry.cas.includes(q)) return true;
+        return entry.alts.some(a => a.toLowerCase().includes(q));
+    }
+
+    function openDd(q) {
+        activeIdx = -1;
+        const matches = _refNames
+            .filter(e => matchesQuery(e, q))
+            .sort((a, b) => {
+                const al = a.name.toLowerCase(), bl = b.name.toLowerCase();
+                const aStart = al.startsWith(q) || a.alts.some(x => x.toLowerCase().startsWith(q));
+                const bStart = bl.startsWith(q) || b.alts.some(x => x.toLowerCase().startsWith(q));
+                if (aStart !== bStart) return aStart ? -1 : 1;
+                return al < bl ? -1 : al > bl ? 1 : 0;
+            })
+            .slice(0, 20);
+        if (!matches.length) {
+            dd.innerHTML = '<div class="ref-dd-none">No solvents found.</div>';
+        } else {
+            dd.innerHTML = matches.map((e, i) => {
+                const matchedAlt = e.alts.find(a => a.toLowerCase().includes(q));
+                const matchedCas = !e.name.toLowerCase().includes(q) && e.cas.includes(q);
+                const sub = matchedAlt ? ` <span class="ref-dd-alt">(${highlight(matchedAlt, q)})</span>`
+                          : matchedCas ? ` <span class="ref-dd-alt">(CAS ${highlight(e.cas, q)})</span>`
+                          : '';
+                return `<div class="ref-dd-item" data-name="${e.name}" data-i="${i}">${highlight(e.name, q)}${sub}</div>`;
+            }).join('');
+            dd.querySelectorAll('.ref-dd-item').forEach(el => {
+                el.addEventListener('mousedown', e => { e.preventDefault(); confirmRef(el.dataset.name); });
+            });
+        }
+        dd.classList.add('open');
+    }
+
+    function confirmRef(name) {
+        inp.value = name;
+        dd.classList.remove('open');
+        saveState(collectState());
+    }
+
+    inp.addEventListener('input', function () {
+        const q = this.value.trim().toLowerCase();
+        if (!q) { dd.classList.remove('open'); return; }
+        openDd(q);
+    });
+
+    inp.addEventListener('keydown', function (e) {
+        const items = dd.querySelectorAll('.ref-dd-item');
+        if (e.key === 'ArrowDown') {
+            activeIdx = Math.min(activeIdx + 1, items.length - 1);
+            items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+            e.preventDefault();
+        } else if (e.key === 'ArrowUp') {
+            activeIdx = Math.max(activeIdx - 1, 0);
+            items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+            e.preventDefault();
+        } else if (e.key === 'Enter' && activeIdx >= 0 && items[activeIdx]) {
+            e.preventDefault();
+            confirmRef(items[activeIdx].dataset.name);
+        } else if (e.key === 'Escape') {
+            dd.classList.remove('open');
+        }
+    });
+
+    inp.addEventListener('blur', function () {
+        setTimeout(() => {
+            dd.classList.remove('open');
+            const v = this.value.trim();
+            if (!v) return;
+            const match = _refNames.find(n => n.toLowerCase() === v.toLowerCase());
+            if (match) {
+                if (this.value !== match) { this.value = match; saveState(collectState()); }
+            } else {
+                this.value = '';
+                saveState(collectState());
+            }
+        }, 160);
+    });
+})();
+
+// ── Populate all dropdowns from APP_OPTIONS ───────────────────────────────
+
+populateSelect('reaction',       APP_OPTIONS.reactions);
+populateSelect('processType',    APP_OPTIONS.processTypes);
+populateSelect('exposureTemp',   APP_OPTIONS.exposureTemp);
+populateSelect('exposureTime',   APP_OPTIONS.exposureTime);
+populateSelect('ventilation',    APP_OPTIONS.ventilation);
+populateSelect('rpe',            APP_OPTIONS.rpe);
+populateSelect('ppe',            APP_OPTIONS.ppe);
+populateSelect('endOfLife',      APP_OPTIONS.endOfLife);
+populateSelect('energyIntensity',APP_OPTIONS.energyIntensity);
+populateSelect('solventSet',     APP_OPTIONS.solventSets);
+
+// ── Load saved state into form ────────────────────────────────────────────
+
+function loadFormFromState() {
+    const s = loadState();
+
+    // Reaction
+    setVal('reaction',      s.reaction);
+    setVal('ref-solvent',   s.referenceSolvent);
+
+    // Chemicals
+    setVal('chemicalsAutofill', s.chemicalsAutofill);
+    if (s.chemicalsAutofill) {
+        applyReactionAutocomplete(s.reaction);
+        // Always restore concentrations — autofill only sets name/rmm
+        setVal('rx-conc', s.reactantX.conc);
+        setVal('ry-conc', s.reactantY.conc);
+        // Only restore C conc if the reaction uses a third component
+        if (document.getElementById('rz-name').value) {
+            setVal('rz-conc', s.reactantZ.conc);
+        }
+    } else {
+        setVal('rx-name',  s.reactantX.name); setVal('rx-rmm',  s.reactantX.rmm); setVal('rx-conc', s.reactantX.conc);
+        setVal('ry-name',  s.reactantY.name); setVal('ry-rmm',  s.reactantY.rmm); setVal('ry-conc', s.reactantY.conc);
+        setVal('rz-name',  s.reactantZ.name); setVal('rz-rmm',  s.reactantZ.rmm); setVal('rz-conc', s.reactantZ.conc);
+        setVal('prod-name', s.product.name);  setVal('prod-rmm', s.product.rmm);
+        setVal('other-name', s.otherReagents.name); setVal('other-mass', s.otherReagents.mass);
+    }
+
+    // Process
+    setVal('processType', s.processType);
+    setVal('scale',       s.scale);
+    setVal('processTemp', s.processTemp);
+    setVal('reactionTime',s.reactionTime);
+
+    // Risk scenario
+    setVal('exposureTemp',  s.exposureTemp);
+    setVal('exposureTime',  s.exposureTime);
+    setVal('ventilation',   s.ventilation);
+    setVal('lev',           s.lev);
+    setVal('rpe',           s.rpe);
+    setVal('ppe',           s.ppe);
+
+    // Utilities & impact
+    setVal('endOfLife',            s.endOfLife);
+    setVal('distillationRecovery', s.distillationRecovery);
+    setVal('energyIntensity',      s.energyIntensity);
+    setVal('climateChange',        s.climateChange);
+    setVal('freshwaterUse',        s.freshwaterUse);
+
+    // Hazards
+    setVal('hz-chronic',   s.hazards.chronicToxicity);
+    setVal('hz-suspected', s.hazards.suspectedChronic);
+    setVal('hz-acute',     s.hazards.acuteToxicity);
+    setVal('hz-pbt',       s.hazards.envPBT);
+    setVal('hz-envtox',    s.hazards.envToxicity);
+
+    // Functional groups
+    const fg = s.functionalGroups;
+    setVal('fg-acid',      fg.acid);
+    setVal('fg-ester',     fg.ester);
+    setVal('fg-alcohol',   fg.alcoholMono);
+    setVal('fg-ether',     fg.ether);
+    setVal('fg-aromatic',  fg.aromaticHydrocarbon);
+    setVal('fg-ketone',    fg.ketoneAndCarbonate);
+    setVal('fg-chlor',     fg.chlorinated);
+    setVal('fg-multi',     fg.multifunctional);
+    setVal('fg-amide',     fg.amide);
+    setVal('fg-inorganic', fg.inorganic);
+    setVal('fg-amine',     fg.amine);
+    setVal('fg-ionic',     fg.ionicLiquid);
+    setVal('fg-aliph',     fg.aliphaticHydrocarbon);
+    setVal('fg-eutectic',  fg.eutecticMixture);
+    setVal('fg-hetero',    fg.otherHeteroatom);
+    setVal('fg-othhal',    fg.otherHalogenated);
+    setVal('fg-fluor',     fg.perfluorinated);
+    setVal('fg-polyol',    fg.polyol);
+    setVal('fg-silox',     fg.siloxane);
+
+    // Polarity
+    setVal('polarityDataOnly',  s.polarityDataOnly);
+    setVal('refineByPolarity',  s.refineByPolarity);
+    setVal('polarityD',         s.polarityD);
+    setVal('polarityP',         s.polarityP);
+    setVal('polarityH',         s.polarityH);
+    setVal('polarityRadius',    s.polarityRadius);
+
+    // Solvent set & state
+    setVal('solventSet',   s.solventSet);
+    setVal('stateSolid',   s.stateAtRT.solid);
+    setVal('stateLiquid',  s.stateAtRT.liquid);
+    setVal('stateGas',     s.stateAtRT.gas);
+    setVal('reachOnly',    s.reachOnly);
+
+    // Properties
+    const p = s.properties;
+    setVal('prop-mp-en',  p.meltingPoint.enabled);    setVal('prop-mp-min',  p.meltingPoint.min);    setVal('prop-mp-max',  p.meltingPoint.max);
+    setVal('prop-bp-en',  p.boilingPoint.enabled);    setVal('prop-bp-min',  p.boilingPoint.min);    setVal('prop-bp-max',  p.boilingPoint.max);
+    setVal('prop-den-en', p.density.enabled);         setVal('prop-den-min', p.density.min);         setVal('prop-den-max', p.density.max);
+    setVal('prop-vis-en', p.viscosity.enabled);       setVal('prop-vis-min', p.viscosity.min);       setVal('prop-vis-max', p.viscosity.max);
+    setVal('prop-st-en',  p.surfaceTension.enabled);  setVal('prop-st-min',  p.surfaceTension.min);  setVal('prop-st-max',  p.surfaceTension.max);
+    setVal('prop-fp-en',  p.flashPoint.enabled);      setVal('prop-fp-min',  p.flashPoint.min);
+    setVal('prop-af-en',  p.autoFlammability.enabled);setVal('prop-af-min',  p.autoFlammability.min);
+    setVal('prop-bio-en', p.bioThreshold.enabled);    setVal('prop-bio-min', p.bioThreshold.min);
+}
+
+// ── Collect form into state object ────────────────────────────────────────
+
+function collectState() {
+    return {
+        reaction:          getVal('reaction'),
+        referenceSolvent:  getVal('ref-solvent'),
+        chemicalsAutofill: getVal('chemicalsAutofill'),
+        reactantX: { name: getVal('rx-name'),   rmm: getVal('rx-rmm'),   conc: getVal('rx-conc')  },
+        reactantY: { name: getVal('ry-name'),   rmm: getVal('ry-rmm'),   conc: getVal('ry-conc')  },
+        reactantZ: { name: getVal('rz-name'),   rmm: getVal('rz-rmm'),   conc: getVal('rz-conc')  },
+        product:   { name: getVal('prod-name'), rmm: getVal('prod-rmm')                            },
+        otherReagents: { name: getVal('other-name'), mass: getVal('other-mass') },
+        processType:      getVal('processType'),
+        scale:            parseFloat(getVal('scale')),
+        processTemp:      getVal('processTemp'),
+        reactionTemp:     (APP_OPTIONS.reactionData[getVal('reaction')] || {}).temp ?? 25,
+        reactionTime:     getVal('reactionTime'),
+        exposureTemp:     getVal('exposureTemp'),
+        exposureTime:     getVal('exposureTime'),
+        ventilation:      getVal('ventilation'),
+        lev:              getVal('lev'),
+        rpe:              getVal('rpe'),
+        ppe:              getVal('ppe'),
+        endOfLife:            getVal('endOfLife'),
+        distillationRecovery: getVal('distillationRecovery'),
+        energyIntensity:  getVal('energyIntensity'),
+        climateChange:    getVal('climateChange'),
+        freshwaterUse:    getVal('freshwaterUse'),
+        hazards: {
+            chronicToxicity:  getVal('hz-chronic'),
+            suspectedChronic: getVal('hz-suspected'),
+            acuteToxicity:    getVal('hz-acute'),
+            envPBT:           getVal('hz-pbt'),
+            envToxicity:      getVal('hz-envtox'),
+        },
+        functionalGroups: {
+            acid:                 getVal('fg-acid'),
+            ester:                getVal('fg-ester'),
+            alcoholMono:          getVal('fg-alcohol'),
+            ether:                getVal('fg-ether'),
+            aromaticHydrocarbon:  getVal('fg-aromatic'),
+            ketoneAndCarbonate:   getVal('fg-ketone'),
+            chlorinated:          getVal('fg-chlor'),
+            multifunctional:      getVal('fg-multi'),
+            amide:                getVal('fg-amide'),
+            inorganic:            getVal('fg-inorganic'),
+            amine:                getVal('fg-amine'),
+            ionicLiquid:          getVal('fg-ionic'),
+            aliphaticHydrocarbon: getVal('fg-aliph'),
+            eutecticMixture:      getVal('fg-eutectic'),
+            otherHeteroatom:      getVal('fg-hetero'),
+            otherHalogenated:     getVal('fg-othhal'),
+            perfluorinated:       getVal('fg-fluor'),
+            polyol:               getVal('fg-polyol'),
+            siloxane:             getVal('fg-silox'),
+        },
+        polarityDataOnly:  getVal('polarityDataOnly'),
+        refineByPolarity:  getVal('refineByPolarity'),
+        polarityD:         getVal('polarityD'),
+        polarityP:         getVal('polarityP'),
+        polarityH:         getVal('polarityH'),
+        polarityRadius:    getVal('polarityRadius'),
+        solventSet:  getVal('solventSet'),
+        stateAtRT: {
+            solid:  getVal('stateSolid'),
+            liquid: getVal('stateLiquid'),
+            gas:    getVal('stateGas'),
+        },
+        reachOnly: getVal('reachOnly'),
+        properties: {
+            meltingPoint:    { enabled: getVal('prop-mp-en'),  min: getVal('prop-mp-min'),  max: getVal('prop-mp-max')  },
+            boilingPoint:    { enabled: getVal('prop-bp-en'),  min: getVal('prop-bp-min'),  max: getVal('prop-bp-max')  },
+            density:         { enabled: getVal('prop-den-en'), min: getVal('prop-den-min'), max: getVal('prop-den-max') },
+            viscosity:       { enabled: getVal('prop-vis-en'), min: getVal('prop-vis-min'), max: getVal('prop-vis-max') },
+            surfaceTension:  { enabled: getVal('prop-st-en'),  min: getVal('prop-st-min'),  max: getVal('prop-st-max')  },
+            flashPoint:      { enabled: getVal('prop-fp-en'),  min: getVal('prop-fp-min'),  max: null },
+            autoFlammability:{ enabled: getVal('prop-af-en'),  min: getVal('prop-af-min'),  max: null },
+            bioThreshold:    { enabled: getVal('prop-bio-en'), min: (v => v === null ? null : Math.min(100, Math.max(0, v)))(getVal('prop-bio-min')), max: null },
+        },
+    };
+}
+
+// ── Clear chemicals table ─────────────────────────────────────────────────
+
+function clearChemicals() {
+    ['rx-name','rx-rmm','rx-conc',
+     'ry-name','ry-rmm','ry-conc',
+     'rz-name','rz-rmm','rz-conc',
+     'prod-name','prod-rmm',
+     'other-name','other-mass'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    saveState(collectState());
+}
+
+// ── Save / Reset handlers ─────────────────────────────────────────────────
+
+function onSave() {
+    saveState(collectState());
+    const status = document.getElementById('save-status');
+    status.style.display = 'inline';
+    setTimeout(() => { status.style.display = 'none'; }, 2000);
+}
+
+function onReset() {
+    if (confirm('Reset all settings to defaults?')) {
+        clearState();
+        loadFormFromState();
+    }
+}
+
+// ── On any change, auto-save ──────────────────────────────────────────────
+
+document.getElementById('interface-form').addEventListener('change', () => {
+    saveState(collectState());
+});
+document.getElementById('interface-form').addEventListener('input', () => {
+    saveState(collectState());
+});
+window.addEventListener('beforeunload', () => {
+    saveState(collectState());
+});
+
+// ── Reaction autocomplete ─────────────────────────────────────────────────
+// When the user selects a reaction, fill in the reactant name fields.
+// Fields that were already manually edited are left alone only if the user
+// has changed them; blank fields are always filled.
+
+function applyReactionAutocomplete(reactionName) {
+    const data = APP_OPTIONS.reactionData[reactionName];
+    if (!data) return;
+
+    function fill(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.value = (value != null) ? value : '';
+    }
+
+    fill('rx-name',   data.A ? data.A.name : '');
+    fill('rx-rmm',    data.A ? data.A.rmm  : '');
+    fill('ry-name',   data.B ? data.B.name : '');
+    fill('ry-rmm',    data.B ? data.B.rmm  : '');
+    fill('rz-name',   data.C ? data.C.name : '');
+    fill('rz-rmm',    data.C ? data.C.rmm  : '');
+    if (!data.C) fill('rz-conc', '');
+    fill('prod-name', data.productName  || '');
+    fill('prod-rmm',  data.productRmm   != null ? data.productRmm : '');
+    updateProcessTempPlaceholder();
+}
+
+function updateProcessTempPlaceholder() {
+    const el = document.getElementById('processTemp');
+    if (!el) return;
+    if (getVal('chemicalsAutofill')) {
+        const data = APP_OPTIONS.reactionData[getVal('reaction')];
+        el.placeholder = (data && data.temp != null) ? 'default ' + data.temp : 'default 25';
+    } else {
+        el.placeholder = 'default 25';
+    }
+}
+
+document.getElementById('reaction').addEventListener('change', function () {
+    if (getVal('chemicalsAutofill')) {
+        applyReactionAutocomplete(this.value);
+    }
+    updateProcessTempPlaceholder();
+    saveState(collectState());
+});
+
+document.getElementById('chemicalsAutofill').addEventListener('change', function () {
+    if (this.checked) {
+        applyReactionAutocomplete(getVal('reaction'));
+    }
+    updateProcessTempPlaceholder();
+});
+
+// ── Initialise ────────────────────────────────────────────────────────────
+loadFormFromState();
+updateProcessTempPlaceholder();
+
+// ── file:// cross-page state: encode state in URL hash when navigating away ──
+// localStorage is not shared between file:// pages in Firefox. Encoding the
+// state in the hash fragment ensures it is always available on the next page.
+document.addEventListener('click', function (e) {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    const dest = a.getAttribute('href');
+    // Only intercept same-directory page links (not back-links, not http, not #)
+    if (!dest || dest.startsWith('#') || dest.startsWith('http') ||
+        dest === 'index.html' || dest === 'about.html') return;
+    e.preventDefault();
+    const st = collectState();
+    saveState(st);
+    window.location.href = dest + '#st=' + encodeURIComponent(JSON.stringify(st));
+});
+</script>
+
+</body>
+</html>

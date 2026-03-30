@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SSbD SSG – About</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <style>
+        .page-content { max-width: 860px; }
+        h4 { margin: 20px 0 6px; color: #556B2F; }
+        p  { color: #444; font-size: 13px; line-height: 1.6; margin: 0 0 8px; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <a href="index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+        <img src="logo.svg" alt="SSbD SSG logo" style="height:36px;width:36px;border-radius:3px;">
+        <strong style="color:white;">SSbD SSG</strong>
+    </a>
+    <div>
+        <a href="index.html">Home</a>
+        <a href="database.html">Database</a>
+        <a href="ssbd.html">SSbD</a>
+        <a href="guide.html">Guide</a>
+        <a href="about.html">About</a>
+    </div>
+</div>
+
+<div class="page-content">
+    <h2 style="margin-bottom:20px;">Sources and methods</h2>
+
+    <p>The SSbD SSG web app performs a bespoke solvent selection analysis based on user input, combining the established
+        solvent selection guide style with modern principles from the Safe and Sustainable by Design framework.
+    </p>
+
+    <h4>Safe and Sustainable by Design</h4>
+    <p>Safe and Sustainable by Design (SSbD) is a framework to encourage the substitution of hazardous 
+        substances with superior alternatives that reduce risk and improve sustainability. Guidelines have been issued in 2022 
+        and then 2026 [<a href="https://research-and-innovation.ec.europa.eu/research-area/industrial-research-and-innovation/chemicals-and-advanced-materials/safe-and-sustainable-design_en" target="_blank">1</a>].
+        It is a voluntary exercise supported by the European Commission. One key aspect of SSbD is a 'safety and sustainability assessment'. It is this
+        'safety and sustainability assessment' that is the inspiration for SSbD SSG. The health and safety aspect is based on
+        risk characterisation ratios, which compares exposure to Occupational Exposure Limits. Exposure has been determined
+        using the same principles as the ECETOC Targeted Risk Assessment tool [<a href="https://www.ecetoc.org/publication/tr-114-ecetoc-tra-version-3-background-and-rationale-for-the-improvements/" target="_blank">2</a>].
+        The risk to the environment is based on environmental fate and the hazards arising from chemical releases.
+        Environmental impacts (climate change and freshwater use) are also computed. The user can also predict the reaction conversion
+        in different solvents. This requires prior knowledge of the solvent effect governing the kinetics of the reaction.
+        SSbD SSG has preset reaction data for which the conversion at a given time can be calculated. The user can add their own reactants for
+        Green Chemistry metrics.
+    </p>
+
+    <h4>References</h4>
+    <p>References to physical property data are given in the Database section. Exposure is taken from 
+        'ECETOC TRA version 3: Background and Rationale for the Improvements'
+        [<a href="https://www.ecetoc.org/publication/tr-114-ecetoc-tra-version-3-background-and-rationale-for-the-improvements/" target="_blank">2</a>].
+        The energy use of processes was derived from the model of Piccinno <i>et al</i>. (2016) 
+        [<a href="https://doi.org/10.1016/j.jclepro.2016.06.164" target="_blank">3</a>].
+        Predicted conversions are obtained using the Variable Time-Normalised Analysis of Burés (2016) 
+        [<a href="https://doi.org/10.1002/anie.201609757" target="_blank">4</a>].
+    </p>
+
+    <h4>Calculated properties</h4>
+    <p>Some predicted data is used in SSbD SSG. Calculated physical property data is used sparingly, mostly for water solubility, 
+        vapour pressure, bioconcentration factor and atmospheric halflife when experimental data was not available. The 
+        Open (Quantitative) Structure-activity/property Relationship App (OPERA) was used to obtain these values (as indicted 
+        in the Database section) 
+        [<a href="https://ntp.niehs.nih.gov/whatwestudy/niceatm/comptox/ct-opera/opera" target="_blank">5</a>].
+        Hansen Solubility Parameters were calculated using the method of Mathieu (2018)
+        [<a href="https://doi.org/10.1021/acsomega.8b02601" target="_blank">6</a>].
+        Environmental partitions between air, water, soil and sediment were calculated using the procedure of Mackay <i>et al</i>. (1992)
+        [<a href="https://doi.org/10.1016/0045-6535(92)90531-U" target="_blank">7</a>].
+        Antoine coefficients were calculated with CoolProp (Bell <i>et al</i>., 2014)
+        [<a href="https://doi.org/10.1021/ie4033999" target="_blank">8</a>].
+        Unknown specific heat capacity values obtained with the method of Růžička & Domalski (1993) 
+        [<a href="https://srd.nist.gov/jpcrdreprint/1.555924.pdf" target="_blank">9</a>].
+    </p>
+
+    <h4>Disclaimer</h4>
+    <p>This tool advises appropriate solvent selection based on a combination of experimental data, predicted data, and modelled scenarios.
+        The actual risk to health, safety and the environment depends on conditions and practices that may not be precisely represented by this tool.
+        SSbD SSG does not replace existing safety protocols and risk assessments. Hazards posed by reactants, catalysts <i>etc</i>. are not included
+        in this web app.
+        SSbD SSG was developed with Claude Code (Anthropic's Claude Sonnet 4.6 AI model), 
+        which assisted with JavaScript implementation, SVG rendering, and logic porting from Python.
+        The SSbD guidance issued by the European Commission is subject to change and may diverge from the approach used in this tool.
+        Email james.richard.sherwood@gmail.com with questions and comments.
+    </p>
+
+</div>
+
+</body>
+</html>
