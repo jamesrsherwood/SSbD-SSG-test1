@@ -16182,7 +16182,7 @@ const SOLVENT_DATA = [
     "Source: water use impact": ""
   },
   {
-    "Name": "?-Pinene",
+    "Name": "α-Pinene",
     "altName1": "",
     "altName2": "",
     "altName3": "",
@@ -52548,7 +52548,7 @@ const SOLVENT_DATA = [
     "Source: water use impact": ""
   },
   {
-    "Name": "?-Farnesene",
+    "Name": "β-Farnesene",
     "altName1": "Farnesene",
     "altName2": "",
     "altName3": "",
@@ -58638,7 +58638,7 @@ const SOLVENT_DATA = [
     "Source: water use impact": ""
   },
   {
-    "Name": "?-Terpinene",
+    "Name": "γ-Terpinene",
     "altName1": "",
     "altName2": "",
     "altName3": "",
@@ -58812,7 +58812,7 @@ const SOLVENT_DATA = [
     "Source: water use impact": ""
   },
   {
-    "Name": "?,?,?-Trifluorotoluene",
+    "Name": "α,α,α-Trifluorotoluene",
     "altName1": "Trifluorotoluene",
     "altName2": "",
     "altName3": "",
@@ -59160,7 +59160,7 @@ const SOLVENT_DATA = [
     "Source: water use impact": ""
   },
   {
-    "Name": "?-Terpinene",
+    "Name": "α-Terpinene",
     "altName1": "",
     "altName2": "",
     "altName3": "",
@@ -63162,7 +63162,7 @@ const SOLVENT_DATA = [
     "Source: water use impact": ""
   },
   {
-    "Name": "Spiro[6,?8-?dioxabicyclo[3.2.1]?octane-?4,?2'-?[1,?3]?dioxolane]",
+    "Name": "Spiro[6,8-dioxabicyclo[3.2.1]octane-4,2'-[1,3]dioxolane]",
     "altName1": "Dioxolane Cygnet",
     "altName2": "Cygnet 0.0",
     "altName3": "",
