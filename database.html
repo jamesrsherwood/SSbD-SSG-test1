@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SSbD SSG – Solvent Database</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <style>
+        .page-content { max-width: 860px; }
+
+        /* ── Search box ───────────────────────────────────────────────────── */
+        .search-wrap {
+            position: relative;
+            margin-bottom: 24px;
+        }
+        .search-wrap input {
+            width: 100%;
+            padding: 9px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .search-wrap input:focus { outline: none; border-color: #444; }
+
+        .search-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0; right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 260px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+        .search-dropdown.open { display: block; }
+        .search-item {
+            padding: 8px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .search-item:last-child { border-bottom: none; }
+        .search-item:hover, .search-item.active { background: #f0f0f0; }
+        .search-item em {
+            font-style: normal;
+            font-weight: 600;
+            color: #444;
+        }
+        .no-results {
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* ── Detail table ─────────────────────────────────────────────────── */
+        #detail-placeholder {
+            color: #aaa;
+            font-size: 14px;
+            text-align: center;
+            padding: 40px 0;
+        }
+        table.detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        table.detail-table td {
+            padding: 5px 10px;
+            vertical-align: top;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        table.detail-table tr:last-child td { border-bottom: none; }
+        td.field-label {
+            width: 39%;
+            color: #555;
+            padding-right: 16px;
+        }
+        td.field-value {
+            color: #222;
+            word-break: break-word;
+        }
+        td.field-value a {
+            color: #444;
+            word-break: break-all;
+        }
+        /* Source rows */
+        tr.source-row td {
+            font-size: 11px;
+            color: #999;
+            padding-top: 1px;
+            padding-bottom: 5px;
+        }
+        /* Section header rows */
+        tr.section-header td {
+            background: #f0f0f0;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #444;
+            padding: 7px 10px;
+            border-bottom: 1px solid #ccc;
+            border-top: 1px solid #ccc;
+        }
+        /* Empty value */
+        .empty-val { color: #bbb; }
+
+        /* ── Reference solvent column ──────────────────────────────────────── */
+        td.field-ref {
+            color: #999;
+            font-style: italic;
+            word-break: break-word;
+            border-left: 1px solid #f0f0f0;
+            padding-left: 12px;
+        }
+        th.ref-header {
+            width: 30%;
+            color: #aaa;
+            font-size: 11px;
+            font-weight: 600;
+            font-style: italic;
+            padding: 4px 10px 4px 12px;
+            border-bottom: 2px solid #e0e0e0;
+            border-left: 1px solid #f0f0f0;
+        }
+
+        /* ── 2-col 3-row detail grid ──────────────────────────────────────── */
+        .detail-grid-6 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
+            align-items: start;
+        }
+        @media (max-width: 600px) {
+            .detail-grid-6 { grid-template-columns: 1fr; }
+        }
+        .dg-panel {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px 12px;
+            min-width: 0;
+        }
+        .dg-panel h4 {
+            margin: 0 0 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #444;
+            font-weight: 600;
+        }
+
+        /* ── 3D viewer ────────────────────────────────────────────────────── */
+        #mol-viewer {
+            width: 100%;
+            aspect-ratio: 4/3;
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+        .mol-controls {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            margin-top: 6px;
+        }
+        .mol-btn {
+            font-size: 11px;
+            font-family: inherit;
+            padding: 2px 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background: white;
+            color: #555;
+            cursor: pointer;
+        }
+        .mol-btn:hover  { background: #f0f0f0; border-color: #444; color: #444; }
+        .mol-btn.active { background: #555; border-color: #444; color: white; }
+        #mol-status {
+            font-size: 11px;
+            color: #aaa;
+            text-align: center;
+            margin-top: 3px;
+            min-height: 15px;
+        }
+
+        .gc-donuts {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+        .gc-donut-item { text-align: center; }
+        .gc-donut-label {
+            font-size: 10px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-top: 2px;
+        }
+        .gc-panel-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        .gc-pmi-label {
+            font-size: 10px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .gc-note {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 6px;
+            font-style: italic;
+        }
+        .gc-legend {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            font-size: 11px;
+            color: #666;
+        }
+        .gc-legend-item { display: flex; align-items: center; gap: 4px; }
+        .gc-legend-swatch {
+            display: inline-block;
+            width: 10px; height: 10px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<script src="state.js"></script>
+<script src="solventData.js"></script>
+<script src="conversion.js"></script>
+<script src="https://3dmol.org/build/3Dmol-min.js" async></script>
+<body>
+
+<div class="navbar">
+    <a href="index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+        <img src="logo.svg" alt="SSbD SSG logo" style="height:36px;width:36px;border-radius:3px;">
+        <strong style="color:white;">SSbD SSG</strong>
+    </a>
+    <div>
+        <a href="index.html">Home</a>
+        <a href="database.html">Database</a>
+        <a href="ssbd.html">SSbD</a>
+        <a href="guide.html">Guide</a>
+        <a href="about.html">About</a>
+    </div>
+</div>
+
+<div class="page-content">
+    <h2 style="margin-bottom:20px;">Solvent database</h2>
+
+    <!-- Search -->
+    <div class="search-wrap">
+        <input type="text" id="solvent-search" placeholder="Search for a solvent by name…" autocomplete="off">
+        <div class="search-dropdown" id="search-dropdown"></div>
+    </div>
+
+    <!-- Detail panel -->
+    <div id="detail-panel">
+        <p id="detail-placeholder">Enter a solvent name above to view its data.</p>
+    </div>
+</div>
+
+<script>
+// ── Restore state from URL hash (file:// cross-page compat) ──────────────
+(function () {
+    const h = window.location.hash;
+    if (h.startsWith('#st=')) {
+        try { saveState(JSON.parse(decodeURIComponent(h.slice(4)))); } catch (e) {}
+        history.replaceState(null, '', window.location.pathname);
+    }
+})();
+
+// ── Field layout ────────────────────────────────────────────────────────────
+// Each group: { heading, rows }
+// Each row: string (field key) | { label, key } | { label, keys:[], src } | 'hazards'
+// A string key is displayed with the key as the label.
+// src: the associated source field key (shown as a small source row below).
+
+const FIELD_GROUPS = [
+  { heading: 'Identity', rows: [
+    'Name', 'CAS', 'Formula', 'SMILES', 'InChI',
+  ]},
+  { heading: 'Availability', rows: [
+    { label: 'Cost per litre',                 key: 'Cost /EUR per L' },
+    { label: 'Availability',                   key: 'Availability' },
+    { label: 'Petrochemical feedstock',        key: 'Petrochemical feedstock' },
+    { label: 'Petrochemical production',       key: 'Petrochemical production' },
+    { label: 'Renewable feedstock',            key: 'Renewable feedstock' },
+    { label: 'Renewable production',           key: 'Renewable production' },
+    { label: 'Bio-based cost',                 key: 'Bio-based cost /EUR per L' },
+    { label: 'Bio-based solvent availability', key: 'Bio-based solvent availability' },
+  ]},
+  { heading: 'Polarity & solubility parameters', rows: [
+    { label: 'Dispersion forces (δD) /MPa½',   key: 'Dispersion forces /MPa\u00bd',         src: 'Source: solubility parameters' },
+    { label: 'Dipole forces (δP) /MPa½',        key: 'Dipole forces /MPa\u00bd',             src: 'Source: solubility parameters' },
+    { label: 'Hydrogen bonding (δH) /MPa½',     key: 'Hydrogen bonding forces /MPa\u00bd',   src: 'Source: solubility parameters' },
+    { label: 'H-bond donating ability (α)',      key: 'Hydrogen bond donating ability',        src: 'Source: solvatochromism' },
+    { label: 'Dipolarity (π*)',                  key: 'Dipolarity',                            src: 'Source: solvatochromism' },
+    { label: 'Polarisability correction (δ)',    key: 'Polarisability correction factor',      src: 'Source: solvatochromism' },
+    { label: 'log(K\u2092\u1d42)',               key: 'log(KOW)',                              src: 'Source: logKOW' },
+    { label: 'Solubility in water /g mL⁻¹',     key: 'Solubility in water /g per mL',         src: 'Source: solubility in water' },
+    { label: 'Solubility of water in solvent /g mL⁻¹', key: 'Solubility of water in this solvent /g per mL', src: 'Source: solubility of water' },
+  ]},
+  { heading: 'Physical properties', rows: [
+    { label: 'Melting point /°C',              key: 'Melting point /\u00b0C',                src: 'Source: melting point' },
+    { label: 'Boiling point /°C',              key: 'Boiling point /\u00b0C',               src: 'Source: boiling point' },
+    { label: 'Vapour pressure /mmHg',          key: 'Vapour pressure /mmHg',                src: 'Source: vapour pressure' },
+    { label: 'Temperature for VP /°C',         key: 'Temperature for vapour pressure /\u00b0C' },
+    { label: 'Density /g mL⁻¹',               key: 'Density /g per mL',                    src: 'Source: density' },
+    { label: 'Dynamic viscosity /cP',          key: 'Dynamic viscosity /cP',                src: 'Source: viscosity' },
+    { label: 'Temperature for viscosity /°C',  key: 'Temperature for viscosity /\u00b0C' },
+    { label: 'Surface tension /mN m⁻¹',        key: 'Surface tension /dynes per cm',        src: 'Source: surface tension' },
+  ]},
+  { heading: 'Fire & safety', rows: [
+    { label: 'Flash point /°C',                key: 'Flash Point /\u00b0C',                 src: 'Source: FP' },
+    { label: 'Autoignition temperature /°C',   key: 'Autoignition temperature /\u00b0C',    src: 'Source: AIT' },
+    { label: 'Upper explosion limit /%',       key: 'Upper explosion limit /%',             src: 'Source: upper explosion' },
+    { label: 'Lower explosion limit /%',       key: 'Lower explosion limit /%',             src: 'Source: lower explosion' },
+    { label: 'Electrical conductivity /10⁻¹ S cm⁻¹', key: 'Electrical conductivity /10-1 S per cm', src: 'Source: conductivity' },
+  ]},
+  { heading: 'Hazard statements', rows: [ 'hazards' ] },
+  { heading: 'Toxicology', rows: [
+    { label: 'Dermal LD₅₀ /mg kg⁻¹',          key: 'Dermal LD50 /mg per kg',               src: 'Source: acute toxicity' },
+    { label: 'Oral LD₅₀ /mg kg⁻¹',            key: 'Oral LD50 /mg per kg' },
+    { label: 'Inhalation LC₅₀ /mg m⁻³',       key: 'Inhalation LC50 /mg per m3' },
+    { label: 'SVHC conditions',                key: 'Conditions' },
+    { label: 'OEL long term (8 hr) /mg m⁻³',  key: 'Long term occupational exposure limit (8 hr) /mg per m3', src: 'Source: OEL' },
+    { label: 'OEL long term (8 hr) /ppm',      key: 'Long term occupational exposure limit (8 hr) /ppm' },
+    { label: 'OEL short term (15 min) /mg m⁻³', key: 'Short term occupational exposure limit (15 min) /mg per m3' },
+    { label: 'OEL short term (15 min) /ppm',   key: 'Short term occupational exposure limit (15 min) /ppm' },
+    { label: 'DNEL long term inhalation /mg m⁻³', key: 'DNEL (long term inhalation) /mg per m3', src: 'Source: DNEL' },
+    { label: 'DNEL short term inhalation /mg m⁻³', key: 'DNEL (short term inhalation) /mg per m3' },
+    { label: 'DNEL long term dermal /mg kg⁻¹ day⁻¹', key: 'DNEL (long term dermal) /mg per kg per day' },
+  ]},
+  { heading: 'Environmental fate', rows: [
+    { label: 'Partition to air /%',            key: 'Air /%',                               src: 'Source: environmental partition' },
+    { label: 'Partition to water /%',          key: 'Water /%' },
+    { label: 'Partition to soil /%',           key: 'Soil /%' },
+    { label: 'Partition to sediment /%',       key: 'Sediment /%' },
+    { label: 'Photodegradation half-life /days', key: 'Photodegradation halflife /days',    src: 'Source: atmospheric halflife' },
+    { label: 'Biodegradation in water',        key: 'Biodegradation in water',              src: 'Source: biodegradation' },
+    { label: 'BCF /L kg⁻¹',                   key: 'BCF (aquatic organisms, preferably fish) / L per kg', src: 'Source: BCF' },
+    { label: 'NOEC /mg L⁻¹',                  key: 'NOEC /mg per L',                       src: 'Source: ecotoxicity' },
+  ]},
+  { heading: 'Life cycle assessment', rows: [
+    { label: 'Production energy /MJ kg⁻¹',    key: 'Production energy /MJ per kg',         src: 'Source: production energy' },
+    { label: 'Incineration energy balance /MJ kg⁻¹', key: 'Net incineration energy balance /MJ per kg', src: 'Source: incineration energy' },
+    { label: 'Climate change (cradle-to-gate) /kg CO₂-eq kg⁻¹', key: 'Climate change (cradle to gate) /kg CO2-eq. per kg', src: 'Source: climate change impact' },
+    { label: 'Water use (production) /L kg⁻¹', key: 'Water use (production) /L per kg',   src: 'Source: water use impact' },
+  ]},
+];
+
+const H_CODES = [
+  'H224','H225','H226','H227','H280',
+  'H314','H318','H302','H312','H332','H315','H317','H319','H320','H335','H336',
+  'H300','H301','H310','H311','H330','H331','H304','H305','H334',
+  'H340','H341','H350','H351','H360','H361','H370','H371','H372','H373',
+  'H400','H410','H411','H412','H413','H420',
+];
+const EUH_CODES = [
+  'EUH019','EUH059','EUH066','EUH070','EUH071',
+  'EUH208','EUH380','EUH381','EUH430','EUH431',
+  'EUH440','EUH441','EUH450','EUH451',
+];
+
+// ── Data loading ─────────────────────────────────────────────────────────────
+
+let solventData = SOLVENT_DATA;
+
+// ── Search logic ──────────────────────────────────────────────────────────────
+
+const searchInput  = document.getElementById('solvent-search');
+const dropdown     = document.getElementById('search-dropdown');
+let activeIdx = -1;
+
+searchInput.addEventListener('input', function () {
+    const q = this.value.trim().toLowerCase();
+    activeIdx = -1;
+    if (!q) { dropdown.classList.remove('open'); return; }
+
+    const matches = solventData
+        .filter(s => s['Name'].toLowerCase().includes(q) ||
+            (s['CAS'] || '').includes(q) ||
+            ['altName1','altName2','altName3'].some(k => (s[k] || '').toLowerCase().includes(q)))
+        .sort((a, b) => { const ka = a['Name'].toLowerCase(), kb = b['Name'].toLowerCase(); return ka < kb ? -1 : ka > kb ? 1 : 0; })
+        .slice(0, 12);
+
+    if (!matches.length) {
+        dropdown.innerHTML = '<div class="no-results">No solvents found.</div>';
+    } else {
+        dropdown.innerHTML = matches.map((s, i) => {
+            const nameMatch = s['Name'].toLowerCase().includes(q);
+            const matchedAlt = !nameMatch && ['altName1','altName2','altName3'].map(k => s[k] || '').find(a => a.toLowerCase().includes(q));
+            const matchedCas = !nameMatch && !matchedAlt && (s['CAS'] || '').includes(q);
+            const sub = matchedAlt ? ` <span style="font-size:11px;color:#888;">(${highlight(matchedAlt, q)})</span>`
+                      : matchedCas ? ` <span style="font-size:11px;color:#888;">(CAS ${highlight(s['CAS'], q)})</span>`
+                      : '';
+            return `<div class="search-item" data-idx="${i}" data-name="${s['Name']}">
+                ${highlight(s['Name'], q)}${sub}
+            </div>`;
+        }).join('');
+        dropdown.querySelectorAll('.search-item').forEach(el => {
+            el.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                selectSolvent(this.dataset.name);
+            });
+        });
+    }
+    dropdown.classList.add('open');
+});
+
+searchInput.addEventListener('keydown', function (e) {
+    const items = dropdown.querySelectorAll('.search-item');
+    if (e.key === 'ArrowDown') {
+        activeIdx = Math.min(activeIdx + 1, items.length - 1);
+        updateActive(items);
+    } else if (e.key === 'ArrowUp') {
+        activeIdx = Math.max(activeIdx - 1, 0);
+        updateActive(items);
+    } else if (e.key === 'Enter') {
+        if (activeIdx >= 0 && items[activeIdx]) {
+            selectSolvent(items[activeIdx].dataset.name);
+        }
+    } else if (e.key === 'Escape') {
+        dropdown.classList.remove('open');
+    }
+});
+
+searchInput.addEventListener('blur', () => {
+    setTimeout(() => dropdown.classList.remove('open'), 150);
+});
+
+function updateActive(items) {
+    items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+}
+
+function highlight(name, q) {
+    const idx = name.toLowerCase().indexOf(q);
+    if (idx < 0) return name;
+    return name.slice(0, idx) +
+           '<em>' + name.slice(idx, idx + q.length) + '</em>' +
+           name.slice(idx + q.length);
+}
+
+function selectSolvent(name) {
+    const solvent = solventData.find(s => s['Name'] === name);
+    if (!solvent) return;
+    searchInput.value = name;
+    dropdown.classList.remove('open');
+    renderDetail(solvent);
+}
+
+// ── Green Chemistry Metrics ───────────────────────────────────────────────────
+// Equations sourced from: github.com/jamesrsherwood/GreenChemMetrics
+//   Atom Economy = productRMM / Σ(reactantRMMs) × 100%
+//   Yield        = LSER-predicted conversion at reaction time
+//   RME          = actual product mass / total reactant mass × 100%
+//   PMI          = total input mass / actual product mass
+//
+// Masses: reactant_i (kg) = [conc_i] × V × RMM_i / 1000
+//         solvent (kg)    = V × ρ   (density in g/mL = kg/L)
+//         other (kg)      = otherReagents.mass from Settings
+
+function gcDonut(pct, color, label) {
+    const S = 100, cx = 50, cy = 43, r = 30, sw = 9;
+    const circ = 2 * Math.PI * r;
+    const capped = pct !== null ? Math.min(Math.max(pct, 0), 100) : 0;
+    const dash = capped / 100 * circ, gap = circ - dash;
+    const valText = pct !== null ? pct.toFixed(0) + '%' : '—';
+    const valFill = pct !== null ? '#222' : '#ccc';
+    return `<div class="gc-donut-item">
+        <svg viewBox="0 0 ${S} ${S - 12}" style="width:${S}px;height:${S - 12}px;">
+            <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e8e8e8" stroke-width="${sw}"/>
+            ${pct !== null ? `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}"
+                stroke-width="${sw}" stroke-linecap="round"
+                stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
+                transform="rotate(-90 ${cx} ${cy})"/>` : ''}
+            <text x="${cx}" y="${cy + 6}" text-anchor="middle"
+                font-size="14" font-weight="700" fill="${valFill}" font-family="inherit">${valText}</text>
+        </svg>
+        <div class="gc-donut-label">${label}</div>
+    </div>`;
+}
+
+// Compute all GC metrics for one solvent. Returns plain data object (no HTML).
+// overrideTimeH: if provided, overrides st.reactionTime for yield/RME/PMI calculation.
+function computeGcData(s, st, overrideTimeH) {
+    const scale  = parseFloat(st.scale) || 100;
+    const rxA    = st.reactantX || {}, rxB = st.reactantY || {};
+    const rxC    = st.reactantZ || {}, prod = st.product  || {};
+    const other  = st.otherReagents || {};
+    const rmmA   = parseFloat(rxA.rmm),  rmmB = parseFloat(rxB.rmm);
+    const rmmC   = parseFloat(rxC.rmm),  rmmP = parseFloat(prod.rmm);
+    const concA  = parseFloat(rxA.conc), concB = parseFloat(rxB.conc);
+    const concC  = parseFloat(rxC.conc);
+    const hasRMMs  = rmmA > 0 && rmmB > 0 && rmmP > 0;
+    const hasConcs = concA > 0 && concB > 0;
+    const hasC     = rmmC > 0 && concC > 0;
+
+    let atomEconomy = null, yieldPct = null, rme = null, pmi = null;
+    let segments = null, totalInput_kg = null, note = null;
+
+    if (hasRMMs)
+        atomEconomy = rmmP / (rmmA + rmmB + (hasC ? rmmC : 0)) * 100;
+
+    if (hasConcs) {
+        const entry = CONVERSION.LSER[st.reaction];
+        if (entry) {
+            const profile = CONVERSION.computeProfile(
+                st.reaction, s, concA,
+                (entry.b_order != null && entry.b_order > 0) ? concB : null,
+                (entry.c_order != null && entry.c_order > 0 && hasC) ? concC : null,
+            );
+            if (profile && profile.time_hours.length >= 2) {
+                const rtH = (overrideTimeH != null)
+                    ? overrideTimeH
+                    : Math.max(0.01, parseFloat(st.reactionTime) || 12);
+                yieldPct = CONVERSION.conversionAtTime(profile, rtH);
+            }
+        }
+    }
+
+    if (hasRMMs && hasConcs) {
+        const massA_kg = concA * scale * rmmA / 1000;
+        const massB_kg = concB * scale * rmmB / 1000;
+        const massC_kg = hasC ? concC * scale * rmmC / 1000 : 0;
+        const totalReactant_kg = massA_kg + massB_kg + massC_kg;
+        const moles = [concA * scale, concB * scale];
+        if (hasC) moles.push(concC * scale);
+        const massProductTheo_kg = Math.min(...moles) * rmmP / 1000;
+        const massProductActual_kg = yieldPct !== null
+            ? massProductTheo_kg * yieldPct / 100 : null;
+
+        if (massProductActual_kg !== null && totalReactant_kg > 0)
+            rme = massProductActual_kg / totalReactant_kg * 100;
+
+        const density        = parseFloat(s['Density /g per mL']); // g/mL = kg/L
+        const massSolvent_kg = density > 0 ? scale * density : null;
+        const massOther_kg   = parseFloat(other.mass) || 0;
+
+        if (massProductActual_kg > 0 && massSolvent_kg !== null) {
+            totalInput_kg = totalReactant_kg + massSolvent_kg + massOther_kg;
+            pmi = totalInput_kg / massProductActual_kg;
+            segments = [
+                { mass_kg: totalReactant_kg, color: '#4caf50' },
+                { mass_kg: massSolvent_kg,   color: '#ff9800' },
+                { mass_kg: massOther_kg,     color: '#2196f3' },
+            ];
+        } else if (massSolvent_kg === null) {
+            note = 'Solvent density not available — PMI cannot be computed.';
+        } else {
+            note = 'Predicted product mass is zero — check concentrations and reaction time.';
+        }
+    }
+
+    if (!note) {
+        if (!hasRMMs)             note = 'Set reactant &amp; product RMMs in Settings.';
+        else if (!hasConcs)       note = 'Set reactant concentrations in Settings.';
+        else if (yieldPct === null) note = 'LSER conversion unavailable — PMI requires a predicted yield.';
+    }
+
+    return { atomEconomy, yieldPct, rme, pmi, segments, totalInput_kg, note };
+}
+
+// Render one labeled PMI bar. Bar width is scaled so maxPMI fills BW pixels.
+function gcPmiBarSingle(label, data, maxPMI, BW) {
+    if (!data.pmi || !data.segments) return '';
+    const barW = data.pmi / maxPMI * BW;
+    let bx = 0;
+    const rects = data.segments.filter(seg => seg.mass_kg > 0).map(seg => {
+        const w = seg.mass_kg / data.totalInput_kg * barW;
+        const rect = `<rect x="${bx.toFixed(1)}" y="0" width="${w.toFixed(1)}" height="16" fill="${seg.color}"/>`;
+        bx += w;
+        return rect;
+    }).join('');
+    return `<div style="margin-bottom:12px;">
+        <div style="font-size:11px;color:#555;margin-bottom:3px;">${escHtml(label)}</div>
+        <svg viewBox="0 0 ${BW} 16" style="width:100%;display:block;border-radius:2px;overflow:hidden;">
+            <rect x="0" y="0" width="${BW}" height="16" fill="#f0f0f0"/>
+            ${rects}
+        </svg>
+        <div style="font-size:11px;color:#333;margin-top:3px;">PMI&nbsp;=&nbsp;<strong>${data.pmi.toFixed(1)}</strong></div>
+    </div>`;
+}
+
+// Returns the PMI bars section HTML. Both bars share the same scale (maxPMI).
+// overrideTimeH: if provided, uses this time instead of st.reactionTime.
+function gcPmiSectionHtml(s, refSolvent, st, overrideTimeH) {
+    const mainData = computeGcData(s, st, overrideTimeH);
+    const refData  = refSolvent ? computeGcData(refSolvent, st, overrideTimeH) : null;
+
+    const pmis = [mainData.pmi, refData ? refData.pmi : null].filter(v => v !== null);
+    if (!pmis.length) {
+        return `<div class="gc-pmi-label">Process Mass Intensity</div>
+            <p class="gc-note">${mainData.note || ''}</p>`;
+    }
+    const maxPMI = Math.max(...pmis);
+    const BW = 200;
+    return `<div class="gc-pmi-label">Process Mass Intensity</div>
+        ${gcPmiBarSingle(s['Name'] || '', mainData, maxPMI, BW)}
+        ${refData ? gcPmiBarSingle((refSolvent['Name'] || '') + '\u202f(ref.)', refData, maxPMI, BW) : ''}
+        ${mainData.note && !mainData.pmi ? `<p class="gc-note">${mainData.note}</p>` : ''}`;
+}
+
+// Returns the donuts + legend HTML.
+// overrideTimeH: if provided, uses this time instead of st.reactionTime.
+function gcDonutsSectionHtml(s, refSolvent, st, overrideTimeH) {
+    const mainData = computeGcData(s, st, overrideTimeH);
+    const refData  = refSolvent ? computeGcData(refSolvent, st, overrideTimeH) : null;
+    const hasRef   = !!refData;
+
+    const donutsHtml = hasRef
+        ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+               <div>
+                   <div class="gc-panel-title">${escHtml(s['Name'] || '')}</div>
+                   <div class="gc-donuts">
+                       ${gcDonut(mainData.yieldPct,    '#2196f3', 'Yield')}
+                       ${gcDonut(mainData.atomEconomy, '#4caf50', 'AE')}
+                       ${gcDonut(mainData.rme,         '#ff9800', 'RME')}
+                   </div>
+               </div>
+               <div>
+                   <div class="gc-panel-title">${escHtml(refSolvent['Name'] || '')}\u202f(ref.)</div>
+                   <div class="gc-donuts">
+                       ${gcDonut(refData.yieldPct,    '#2196f3', 'Yield')}
+                       ${gcDonut(refData.atomEconomy, '#4caf50', 'AE')}
+                       ${gcDonut(refData.rme,         '#ff9800', 'RME')}
+                   </div>
+               </div>
+           </div>`
+        : `<div class="gc-donuts">
+               ${gcDonut(mainData.yieldPct,    '#2196f3', 'Yield')}
+               ${gcDonut(mainData.atomEconomy, '#4caf50', 'Atom economy')}
+               ${gcDonut(mainData.rme,         '#ff9800', 'RME')}
+           </div>`;
+
+    const legendItems = [
+        { color: '#4caf50', label: 'Reactants'     },
+        { color: '#ff9800', label: 'Solvent'        },
+        { color: '#2196f3', label: 'Other reagents' },
+    ];
+    const legend = `<div class="gc-legend">
+        ${legendItems.map(l =>
+            `<span class="gc-legend-item">
+                <span class="gc-legend-swatch" style="background:${l.color};"></span>${l.label}
+            </span>`
+        ).join('')}
+        <span style="color:#aaa;margin-left:auto;">
+            Scale:\u202f${parseFloat(st.scale)||100}\u202fL
+            &nbsp;·&nbsp; t\u202f=\u202f${parseFloat(st.reactionTime)||12}\u202fh
+        </span>
+    </div>`;
+
+    return donutsHtml + legend;
+}
+
+// ── Conversion-vs-time chart with draggable time marker ───────────────────────
+
+function convChart(solvent, st) {
+    _convProfiles = null;
+    _convLayout   = null;
+
+    const reaction = st.reaction;
+    const entry = CONVERSION.LSER[reaction];
+    const noData = txt => `<em style="color:#aaa;font-size:11px;">${txt}</em>`;
+    if (!entry) return noData('No LSER data for this reaction type.');
+
+    const concA = parseFloat(st.reactantX && st.reactantX.conc);
+    const concB = parseFloat(st.reactantY && st.reactantY.conc);
+    const concC = parseFloat(st.reactantZ && st.reactantZ.conc);
+    const reactionTimeH = Math.max(0.01, parseFloat(st.reactionTime) || 12);
+
+    function makeProfile(sv) {
+        if (!sv) return null;
+        return CONVERSION.computeProfile(
+            reaction, sv,
+            isNaN(concA) ? null : concA,
+            (entry.b_order != null && entry.b_order > 0) ? (isNaN(concB) ? null : concB) : null,
+            (entry.c_order != null && entry.c_order > 0) ? (isNaN(concC) ? null : concC) : null,
+        );
+    }
+
+    const refName    = (st.referenceSolvent || '').trim();
+    const refSolvent = refName
+        ? solventData.find(sv => (sv['Name'] || '').trim().toLowerCase() === refName.toLowerCase())
+        : null;
+
+    const profileMain = makeProfile(solvent);
+    const profileRef  = makeProfile(refSolvent);
+
+    const mainHasData = profileMain && profileMain.time_hours.length >= 2;
+    const refHasData  = profileRef  && profileRef.time_hours.length  >= 2;
+
+    if (!mainHasData && !refHasData) {
+        if (!profileMain && !profileRef)
+            return noData('Conversion not available (polarity data required for this reaction).');
+        return noData('Set reactant concentrations in Settings to compute conversion.');
+    }
+
+    // Store for drag handler
+    _convProfiles = { main: profileMain, ref: profileRef, mainHasData, refHasData };
+
+    const W = 580, H = 340;
+    const ML = 70, MR = 12, MT = 34, MB = 60;
+    const PW = W - ML - MR, PH = H - MT - MB;
+    const xS = t => ML + Math.min(Math.max(+t, 0), 24) / 24 * PW;
+    const yS = c => MT + PH - Math.min(Math.max(+c, 0), 100) / 100 * PH;
+
+    _convLayout = { W, ML, MT, PH, PW };
+
+    function makePoints(profile) {
+        if (!profile || profile.time_hours.length < 2) return null;
+        const pts = [];
+        let lastConv = 0;
+        for (let i = 0; i < profile.time_hours.length; i++) {
+            const t = profile.time_hours[i];
+            lastConv = profile.conv_pct[i];
+            pts.push(`${xS(t).toFixed(1)},${yS(lastConv).toFixed(1)}`);
+            if (t >= 24) break;
+        }
+        if (profile.time_hours[profile.time_hours.length - 1] < 24)
+            pts.push(`${xS(24).toFixed(1)},${yS(lastConv).toFixed(1)}`);
+        return pts.join(' ');
+    }
+
+    const mainPts = makePoints(profileMain);
+    const refPts  = makePoints(profileRef);
+
+    const gridLines = [25, 50, 75].map(pct =>
+        `<line x1="${ML}" y1="${yS(pct).toFixed(1)}" x2="${W - MR}" y2="${yS(pct).toFixed(1)}" stroke="#e8e8e8" stroke-width="1"/>`
+    ).join('');
+
+    const yAxis = [0, 25, 50, 75, 100].map(pct =>
+        `<text x="${ML - 8}" y="${(yS(pct) + 7).toFixed(1)}" text-anchor="end" font-size="22" fill="#555">${pct}%</text>`
+    ).join('');
+
+    const xAxis = [0, 6, 12, 18, 24].map(hr => {
+        const x = xS(hr).toFixed(1);
+        return `<line x1="${x}" y1="${MT + PH}" x2="${x}" y2="${MT + PH + 7}" stroke="#222" stroke-width="1.5"/>` +
+               `<text x="${x}" y="${MT + PH + 28}" text-anchor="middle" font-size="22" fill="#555">${hr}h</text>`;
+    }).join('');
+
+    // Settings reaction time: subtle grey dashed reference (no label; drag marker carries the label)
+    const rtX = xS(Math.min(reactionTimeH, 24)).toFixed(1);
+    const settingsMarker =
+        `<line x1="${rtX}" y1="${MT}" x2="${rtX}" y2="${MT + PH}" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>`;
+
+    // Draggable marker — starts at the settings reaction time; updateDragTime() repositions it
+    const dragMarker = `<g id="db-drag-marker">
+        <line   id="db-drag-line"   x1="${rtX}" y1="${MT}" x2="${rtX}" y2="${MT + PH}"
+                stroke="steelblue" stroke-width="2"/>
+        <circle id="db-drag-handle" cx="${rtX}" cy="${MT}" r="7" fill="steelblue"/>
+        <text   id="db-drag-label"  x="${rtX}"  y="${MT - 12}"
+                text-anchor="middle" font-size="20" font-weight="600" fill="steelblue"
+                font-family="inherit">${reactionTimeH}h</text>
+    </g>`;
+
+    // Legend — <tspan>s with IDs so updateDragTime() can patch conversion values in-place
+    const mainConvAtT = mainHasData ? CONVERSION.conversionAtTime(profileMain, reactionTimeH) : null;
+    const refConvAtT  = refHasData  ? CONVERSION.conversionAtTime(profileRef,  reactionTimeH) : null;
+    const mainLabel   = (solvent['Name'] || '').substring(0, 24);
+    const refLabel    = refSolvent ? (refSolvent['Name'] || '').substring(0, 24) : '';
+
+    const LX = W - MR, LSW = 30;
+    let legend = '';
+    let ly = MT + PH - 10;
+    if (refPts) {
+        const cv = refConvAtT !== null ? ` \u2014 ${refConvAtT.toFixed(0)}%` : '';
+        legend = `<line x1="${LX-LSW}" y1="${ly}" x2="${LX}" y2="${ly}" stroke="#aaa" stroke-width="2" stroke-dasharray="6,4"/>` +
+                 `<text x="${LX-LSW-6}" y="${ly+7}" text-anchor="end" font-size="22" fill="#777">${refLabel}<tspan id="db-conv-ref">${cv}</tspan>\u202f(ref)</text>`;
+        ly -= 30;
+    }
+    if (mainPts) {
+        const cv = mainConvAtT !== null ? ` \u2014 ${mainConvAtT.toFixed(0)}%` : '';
+        legend = `<line x1="${LX-LSW}" y1="${ly}" x2="${LX}" y2="${ly}" stroke="steelblue" stroke-width="2.5"/>` +
+                 `<text x="${LX-LSW-6}" y="${ly+7}" text-anchor="end" font-size="22" fill="#333">${mainLabel}<tspan id="db-conv-main">${cv}</tspan></text>` +
+                 legend;
+    }
+
+    let refMsg = '';
+    if (refName && !refSolvent)
+        refMsg = `<text x="${W-MR}" y="${MT+22}" text-anchor="end" font-size="22" fill="#c0392b">Reference "${refName}" not found</text>`;
+    else if (!refName)
+        refMsg = `<text x="${W-MR}" y="${MT+22}" text-anchor="end" font-size="22" fill="#bbb">Set reference solvent in Settings</text>`;
+
+    // Transparent hit-area rect over the plot — captures mouse/touch for dragging
+    const hitRect =
+        `<rect id="db-conv-hit" x="${ML}" y="${MT - 24}" width="${PW}" height="${PH + 24}" fill="transparent" style="cursor:ew-resize;"/>`;
+
+    return `<svg id="db-conv-svg" viewBox="0 0 ${W} ${H}"
+            style="width:100%;display:block;user-select:none;" xmlns="http://www.w3.org/2000/svg">
+        ${gridLines}
+        <line x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT + PH}" stroke="#222" stroke-width="2"/>
+        <line x1="${ML}" y1="${MT + PH}" x2="${W - MR}" y2="${MT + PH}" stroke="#222" stroke-width="2"/>
+        ${xAxis}${yAxis}
+        ${settingsMarker}
+        ${refPts  ? `<polyline points="${refPts}"  fill="none" stroke="#aaa" stroke-width="2" stroke-dasharray="6,4" stroke-linejoin="round"/>` : ''}
+        ${mainPts ? `<polyline points="${mainPts}" fill="none" stroke="steelblue" stroke-width="2.5" stroke-linejoin="round"/>` : ''}
+        ${mainHasData ? '' : `<text x="${ML + 8}" y="${yS(50)}" font-size="22" fill="#bbb">No polarity data for ${mainLabel}</text>`}
+        ${dragMarker}
+        ${legend}${refMsg}
+        ${hitRect}
+    </svg>`;
+}
+
+// ── Re-render detail when index.html changes the reference solvent ─────────────
+
+let currentSolvent = null;
+window.addEventListener('storage', e => {
+    if (e.key === 'ssgUserSettings' && currentSolvent) renderDetail(currentSolvent);
+});
+
+// ── Drag-interactive chart state (local only, never written to Settings) ──────
+let _convProfiles = null;  // { main, ref, mainHasData, refHasData }
+let _convLayout   = null;  // { W, ML, MT, PH, PW }
+let _dragCleanup  = null;  // removes window listeners from previous render
+
+// ── Drag interaction for the conversion chart ─────────────────────────────────
+
+function initConvDrag() {
+    // Remove any listeners attached by a previous renderDetail() call
+    if (_dragCleanup) { _dragCleanup(); _dragCleanup = null; }
+
+    const svg = document.getElementById('db-conv-svg');
+    const hit = document.getElementById('db-conv-hit');
+    if (!svg || !hit || !_convLayout) return;
+
+    let dragging = false;
+
+    function getT(e) {
+        const rect = svg.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        // Map from CSS pixels → SVG viewBox x → time 0–24 h
+        const svgX = (clientX - rect.left) / rect.width * _convLayout.W;
+        return Math.min(Math.max((svgX - _convLayout.ML) / _convLayout.PW * 24, 0), 24);
+    }
+
+    function onStart(e) { dragging = true;  e.preventDefault(); updateDragTime(getT(e)); }
+    function onMove(e)  { if (!dragging) return; e.preventDefault(); updateDragTime(getT(e)); }
+    function onEnd()    { dragging = false; }
+
+    hit.addEventListener('mousedown',  onStart);
+    hit.addEventListener('touchstart', onStart, { passive: false });
+    window.addEventListener('mousemove',  onMove);
+    window.addEventListener('mouseup',    onEnd);
+    window.addEventListener('touchmove',  onMove, { passive: false });
+    window.addEventListener('touchend',   onEnd);
+
+    _dragCleanup = () => {
+        hit.removeEventListener('mousedown',  onStart);
+        hit.removeEventListener('touchstart', onStart);
+        window.removeEventListener('mousemove',  onMove);
+        window.removeEventListener('mouseup',    onEnd);
+        window.removeEventListener('touchmove',  onMove);
+        window.removeEventListener('touchend',   onEnd);
+    };
+}
+
+function updateDragTime(t) {
+    if (!_convLayout) return;
+    const { W, ML, MT, PH, PW } = _convLayout;
+    const x = (ML + t / 24 * PW).toFixed(1);
+
+    // Move the draggable marker elements
+    const line   = document.getElementById('db-drag-line');
+    const handle = document.getElementById('db-drag-handle');
+    const label  = document.getElementById('db-drag-label');
+    if (line)   { line.setAttribute('x1', x); line.setAttribute('x2', x); }
+    if (handle) { handle.setAttribute('cx', x); }
+    if (label)  { label.setAttribute('x', x); label.textContent = t.toFixed(1) + 'h'; }
+
+    // Patch conversion values in the chart legend (tspan elements)
+    if (_convProfiles) {
+        const mainConv = _convProfiles.mainHasData
+            ? CONVERSION.conversionAtTime(_convProfiles.main, t) : null;
+        const refConv  = _convProfiles.refHasData
+            ? CONVERSION.conversionAtTime(_convProfiles.ref,  t) : null;
+        const mainEl = document.getElementById('db-conv-main');
+        const refEl  = document.getElementById('db-conv-ref');
+        if (mainEl) mainEl.textContent = mainConv !== null ? ` \u2014 ${mainConv.toFixed(0)}%` : '';
+        if (refEl)  refEl.textContent  = refConv  !== null ? ` \u2014 ${refConv.toFixed(0)}%`  : '';
+    }
+
+    // Re-render PMI bars and donut section for the new time
+    const st       = loadState();
+    const refName  = (st.referenceSolvent || '').trim();
+    const refSv    = refName
+        ? solventData.find(sv => (sv['Name'] || '').trim().toLowerCase() === refName.toLowerCase())
+        : null;
+    const hasRef   = !!(refSv && currentSolvent && refSv['Name'] !== currentSolvent['Name']);
+    const refArg   = hasRef ? refSv : null;
+
+    const pmiCol    = document.getElementById('db-pmi-col');
+    const donutsRow = document.getElementById('db-donuts-row');
+    if (pmiCol)    pmiCol.innerHTML    = gcPmiSectionHtml(currentSolvent, refArg, st, t);
+    if (donutsRow) donutsRow.innerHTML = gcDonutsSectionHtml(currentSolvent, refArg, st, t);
+}
+
+// ── Detail table ──────────────────────────────────────────────────────────────
+
+function renderDetail(s) {
+    currentSolvent = s;
+    const panel = document.getElementById('detail-panel');
+    const rows = [];      // combined (legacy, still built for compatibility)
+    const rowsSel = [];   // selected solvent only
+    const rowsRef = [];   // reference solvent only
+
+    // Reference solvent (from state saved in index.html)
+    const refName = (loadState().referenceSolvent || '').trim();
+    const ref = refName ? solventData.find(x => x['Name'] === refName) : null;
+
+    FIELD_GROUPS.forEach(group => {
+        let groupRows = '';
+
+        group.rows.forEach(row => {
+            if (row === 'hazards') {
+                const active = [
+                    ...H_CODES.filter(c => s[c] === 'Y'),
+                    ...EUH_CODES.filter(c => s[c] === 'Y'),
+                ];
+                const val = active.length
+                    ? active.join(', ')
+                    : '<span class="empty-val">None</span>';
+                let refCell = '';
+                if (ref) {
+                    const refActive = [
+                        ...H_CODES.filter(c => ref[c] === 'Y'),
+                        ...EUH_CODES.filter(c => ref[c] === 'Y'),
+                    ];
+                    refCell = `<td class="field-ref">${refActive.length ? refActive.join(', ') : '<span class="empty-val">None</span>'}</td>`;
+                }
+                groupRows += `<tr>
+                    <td class="field-label">Active hazard statements</td>
+                    <td class="field-value">${val}</td>
+                    ${refCell}
+                </tr>`;
+                return;
+            }
+
+            const key   = typeof row === 'string' ? row : row.key;
+            const label = typeof row === 'string' ? row : row.label;
+            const src   = typeof row === 'object' ? row.src : null;
+
+            const raw = s[key];
+            const val = (raw !== undefined && raw !== null && raw !== '')
+                ? linkify(String(raw))
+                : '<span class="empty-val">—</span>';
+
+            let refCell = '';
+            if (ref) {
+                const rraw = ref[key];
+                refCell = `<td class="field-ref">${(rraw !== undefined && rraw !== null && rraw !== '') ? escHtml(String(rraw)) : '<span class="empty-val">—</span>'}</td>`;
+            }
+
+            groupRows += `<tr>
+                <td class="field-label">${label}</td>
+                <td class="field-value">${val}</td>
+                ${refCell}
+            </tr>`;
+
+            if (src && s[src]) {
+                groupRows += `<tr class="source-row">
+                    <td class="field-label">Source</td>
+                    <td class="field-value">${linkify(s[src])}</td>
+                    ${ref ? '<td class="field-ref"></td>' : ''}
+                </tr>`;
+            }
+        });
+
+        const colspan = ref ? 3 : 2;
+        rows.push(`
+            <tr class="section-header"><td colspan="${colspan}">${group.heading}</td></tr>
+            ${groupRows}
+        `);
+
+        // Split rows for the two separate panels
+        rowsSel.push(`<tr class="section-header"><td colspan="2">${group.heading}</td></tr>`);
+        if (ref) rowsRef.push(`<tr class="section-header"><td colspan="2">${group.heading}</td></tr>`);
+        group.rows.forEach(row => {
+            if (row === 'hazards') {
+                const active = [...H_CODES.filter(c => s[c] === 'Y'), ...EUH_CODES.filter(c => s[c] === 'Y')];
+                const selVal = active.length ? active.join(', ') : '<span class="empty-val">None</span>';
+                rowsSel.push(`<tr><td class="field-label">Active hazard statements</td><td class="field-value">${selVal}</td></tr>`);
+                if (ref) {
+                    const ra = [...H_CODES.filter(c => ref[c] === 'Y'), ...EUH_CODES.filter(c => ref[c] === 'Y')];
+                    rowsRef.push(`<tr><td class="field-label">Active hazard statements</td><td class="field-value">${ra.length ? ra.join(', ') : '<span class="empty-val">None</span>'}</td></tr>`);
+                }
+                return;
+            }
+            const key   = typeof row === 'string' ? row : row.key;
+            const label = typeof row === 'string' ? row : row.label;
+            const src   = typeof row === 'object' ? row.src : null;
+            const raw = s[key];
+            const selVal = (raw !== undefined && raw !== null && raw !== '') ? linkify(String(raw)) : '<span class="empty-val">—</span>';
+            rowsSel.push(`<tr><td class="field-label">${label}</td><td class="field-value">${selVal}</td></tr>`);
+            if (src && s[src]) rowsSel.push(`<tr class="source-row"><td class="field-label">Source</td><td class="field-value">${linkify(s[src])}</td></tr>`);
+            if (ref) {
+                const rraw = ref[key];
+                const refVal = (rraw !== undefined && rraw !== null && rraw !== '') ? escHtml(String(rraw)) : '<span class="empty-val">—</span>';
+                rowsRef.push(`<tr><td class="field-label">${label}</td><td class="field-value">${refVal}</td></tr>`);
+                if (src && ref[src]) rowsRef.push(`<tr class="source-row"><td class="field-label">Source</td><td class="field-value">${linkify(ref[src])}</td></tr>`);
+            }
+        });
+    });
+
+    const selRows = rowsSel;
+    const refRows = rowsRef;
+
+    // Load state once for all chart/metrics rendering
+    const st = loadState();
+    const refName2   = (st.referenceSolvent || '').trim();
+    const refSolvent = refName2
+        ? solventData.find(sv => (sv['Name'] || '').trim().toLowerCase() === refName2.toLowerCase())
+        : null;
+    const hasRef2 = !!(refSolvent && refSolvent['Name'] !== s['Name']);
+
+    const thStyle = 'text-align:left;padding:4px 10px;background:#556B2F;border-bottom:2px solid #3d4d21;font-size:11px;color:#fff;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;';
+
+    panel.innerHTML = `
+        <div class="detail-grid-6">
+
+            <!-- Row 1: 3D model | Hansen sphere -->
+            <div class="dg-panel">
+                <div id="mol-viewer"></div>
+                <div class="mol-controls">
+                    <button class="mol-btn active" id="btn-ballstick" onclick="setMolStyle('ballstick')">Ball &amp; stick</button>
+                    <button class="mol-btn"        id="btn-sphere"    onclick="setMolStyle('sphere')">Sphere</button>
+                    <button class="mol-btn"        id="btn-stick"     onclick="setMolStyle('stick')">Stick</button>
+                </div>
+                <div id="mol-status">Loading structure…</div>
+            </div>
+            <div class="dg-panel">
+                ${dbHansenCard(s, st)}
+            </div>
+
+            <!-- Row 2: Conversion chart | PMI -->
+            <div class="dg-panel">
+                <h4>${escHtml(st.reaction || '—')}</h4>
+                ${convChart(s, st)}
+            </div>
+            <div class="dg-panel" id="db-pmi-col">
+                ${gcPmiSectionHtml(s, hasRef2 ? refSolvent : null, st)}
+            </div>
+
+            <!-- Row 3: Donuts (full width) -->
+            <div class="dg-panel" style="grid-column:1/-1;" id="db-donuts-row">
+                ${gcDonutsSectionHtml(s, hasRef2 ? refSolvent : null, st)}
+            </div>
+
+            <!-- Row 4: Selected solvent metrics | Reference solvent metrics -->
+            <div class="dg-panel">
+                <table class="detail-table" style="width:100%;">
+                    <thead><tr><th style="${thStyle}" colspan="2">${escHtml(s['Name'] || '')}</th></tr></thead>
+                    <tbody>${selRows.join('')}</tbody>
+                </table>
+            </div>
+            <div class="dg-panel">
+                ${ref
+                    ? `<table class="detail-table" style="width:100%;">
+                        <thead><tr><th style="${thStyle}" colspan="2">${escHtml(ref['Name'])} (ref.)</th></tr></thead>
+                        <tbody>${refRows.join('')}</tbody>
+                       </table>`
+                    : `<div style="color:#aaa;font-size:12px;font-style:italic;padding:8px 0;">No reference solvent set — choose one in Settings.</div>`
+                }
+            </div>
+
+        </div>`;
+
+    initViewer(s);
+    initConvDrag();
+    const _dbHsId = 'db-hansen-' + s['Name'].replace(/[^a-zA-Z0-9]/g, '_');
+    setTimeout(() => initHansenSphere(_dbHsId, s, st), 0);
+}
+
+// ── Hansen Solubility Sphere (database page) ──────────────────────────────────
+
+function dbHansenCard(s, st) {
+    const num = (obj, k) => { const v = parseFloat(obj[k]); return isNaN(v) ? null : v; };
+    const cD = num(s, 'Dispersion forces /MPa\u00bd');
+    const cP = num(s, 'Dipole forces /MPa\u00bd');
+    const cH = num(s, 'Hydrogen bonding forces /MPa\u00bd');
+    const tD = parseFloat(st.polarityD), tP = parseFloat(st.polarityP);
+    const tH = parseFloat(st.polarityH), tR = parseFloat(st.polarityRadius);
+    const hasT = !isNaN(tD) && !isNaN(tP) && !isNaN(tH) && !isNaN(tR);
+    const hasSv = cD !== null && cP !== null && cH !== null;
+
+    let raHtml = '';
+    if (hasSv && hasT) {
+        const ra  = Math.sqrt(4*(cD-tD)**2 + (cP-tP)**2 + (cH-tH)**2);
+        const red = ra / tR;
+        raHtml = `<div style="font-size:11px;color:#555;text-align:center;margin-top:6px;">
+            Ra\u202f=\u202f${ra.toFixed(2)}\u202fMPa<sup>\u00bd</sup>
+            \u00a0\u00b7\u00a0 R\u2080\u202f=\u202f${tR.toFixed(1)}\u202fMPa<sup>\u00bd</sup>
+            \u00a0\u00b7\u00a0 Ra\u2044R\u2080\u202f=\u202f${red.toFixed(2)}
+            \u00a0<span style="font-weight:600;color:${red<=1?'#2e7d32':'#c62828'}">${red<=1?'\u2713 Inside sphere':'\u2717 Outside sphere'}</span>
+        </div>`;
+    } else if (!hasSv) {
+        raHtml = '<p style="font-size:11px;color:#aaa;text-align:center;margin-top:4px;">No Hansen data for this solvent.</p>';
+    }
+
+    const cid = 'db-hansen-' + s['Name'].replace(/[^a-zA-Z0-9]/g, '_');
+    const refLbl = (st.referenceSolvent || '').trim();
+    const nameHtml = `<div style="font-size:17px;font-weight:700;color:#222;margin-bottom:8px;">${escHtml(s['Name'] || '')}${refLbl ? `<span style="font-size:13px;font-weight:400;color:#aaa;margin-left:10px;">vs. ${escHtml(refLbl)}</span>` : ''}</div>`;
+    return `${nameHtml}
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#444;font-weight:600;margin-bottom:6px;">Hansen Solubility Sphere</div>
+        ${!hasT ? '<p style="font-size:11px;color:#888;margin:0 0 6px;">Set \u03b4D, \u03b4P, \u03b4H and radius in Settings \u2192 Polarity to show the sphere.</p>' : ''}
+        <canvas id="${cid}" width="480" height="300"
+            style="width:100%;display:block;cursor:grab;touch-action:none;border-radius:3px;background:#fafafa;"></canvas>
+        <p style="font-size:10px;color:#999;text-align:center;margin:3px 0 0;">Drag to rotate \u00b7 Axes: \u03b4D \u00b7 \u03b4P \u00b7 \u03b4H (δD range = \u00bd\u00d7 δP/δH)</p>
+        ${raHtml}`;
+}
+
+function initHansenSphere(canvasId, s, st) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const NUM = (obj, k) => { const v = parseFloat(obj[k]); return isNaN(v) ? null : v; };
+
+    const tD = parseFloat(st.polarityD), tP = parseFloat(st.polarityP);
+    const tH = parseFloat(st.polarityH), tR = parseFloat(st.polarityRadius);
+    const hasT = !isNaN(tD) && !isNaN(tP) && !isNaN(tH) && !isNaN(tR);
+    const refName = (st.referenceSolvent || '').trim();
+
+    // All solvents with full Hansen data
+    const allPts = solventData.map(sv => ({
+        name: sv['Name'],
+        d: NUM(sv, 'Dispersion forces /MPa\u00bd'),
+        p: NUM(sv, 'Dipole forces /MPa\u00bd'),
+        h: NUM(sv, 'Hydrogen bonding forces /MPa\u00bd'),
+    })).filter(pt => pt.d !== null && pt.p !== null && pt.h !== null);
+
+    let az = 0.6, el = 0.35;
+    let dragging = false, lastX = 0, lastY = 0;
+
+    function proj(x, y, z) {
+        const ca = Math.cos(az), sa = Math.sin(az);
+        const ce = Math.cos(el), se = Math.sin(el);
+        const x1 = x * ca - z * sa;
+        const z1 = x * sa + z * ca;
+        return { sx: x1, sy: -(y * ce - z1 * se), depth: y * se + z1 * ce };
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Fixed world-space centre: sphere centre if target set, else data centroid
+        const cx = hasT ? tD*2 : (allPts.length ? allPts.reduce((a,p)=>a+p.d*2,0)/allPts.length : 14);
+        const cy = hasT ? tP   : (allPts.length ? allPts.reduce((a,p)=>a+p.p,0)/allPts.length : 5);
+        const cz = hasT ? tH   : (allPts.length ? allPts.reduce((a,p)=>a+p.h,0)/allPts.length : 7);
+
+        // When target set: fix scale to 2×R₀ and drop dots outside that
+        let maxR;
+        let visiblePts;
+        if (hasT) {
+            maxR = 2 * tR;
+            visiblePts = allPts.filter(pt =>
+                Math.sqrt((pt.d*2-cx)**2 + (pt.p-cy)**2 + (pt.h-cz)**2) <= maxR);
+        } else {
+            visiblePts = allPts;
+            maxR = 1;
+            allPts.forEach(pt => {
+                const d = Math.sqrt((pt.d*2-cx)**2 + (pt.p-cy)**2 + (pt.h-cz)**2);
+                if (d > maxR) maxR = d;
+            });
+            maxR = Math.max(maxR, 1) * 1.15;
+        }
+
+        const pad = 40;
+        const sc = Math.min((W/2 - pad) / maxR, (H/2 - pad) / maxR);
+
+        // Project relative to fixed centre → canvas coords (sphere always at W/2, H/2)
+        const pS = (dx, dy, dz) => {
+            const { sx, sy, depth } = proj(dx, dy, dz);
+            return { x: W/2 + sx*sc, y: H/2 + sy*sc, depth };
+        };
+
+        // Transparent sphere at canvas centre — stationary
+        if (hasT) {
+            ctx.beginPath();
+            ctx.arc(W/2, H/2, tR * sc, 0, Math.PI*2);
+            ctx.fillStyle = 'rgba(170,170,170,0.13)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(120,120,120,0.35)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        // Axes through canvas centre with arrowhead + tick values at ±½ and ±1× axLen
+        const axLen = maxR;
+        [
+            { vec: [1,0,0], lbl: '\u03b4D',  toVal: f => (cx + f*axLen) / 2 },
+            { vec: [0,1,0], lbl: '\u03b4P',  toVal: f => cy + f*axLen },
+            { vec: [0,0,1], lbl: '\u03b4H',  toVal: f => cz + f*axLen },
+        ].forEach(({ vec, lbl, toVal }) => {
+            const neg = pS(-vec[0]*axLen, -vec[1]*axLen, -vec[2]*axLen);
+            const pos = pS( vec[0]*axLen,  vec[1]*axLen,  vec[2]*axLen);
+            ctx.beginPath(); ctx.moveTo(neg.x, neg.y); ctx.lineTo(pos.x, pos.y);
+            ctx.strokeStyle = 'rgba(160,160,160,0.55)'; ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+            const adx = pos.x - neg.x, ady = pos.y - neg.y;
+            const am = Math.hypot(adx, ady) || 1;
+            const ux = adx/am, uy = ady/am;  // axis direction
+            const px = -uy, py = ux;          // perpendicular (left of axis)
+            // Tick marks and values at ±½ and ±1
+            [-1, -0.5, 0.5, 1].forEach(f => {
+                const val = toVal(f);
+                if (val <= 0) return;
+                const tp = pS(vec[0]*f*axLen, vec[1]*f*axLen, vec[2]*f*axLen);
+                ctx.beginPath();
+                ctx.moveTo(tp.x + px*4, tp.y + py*4);
+                ctx.lineTo(tp.x - px*4, tp.y - py*4);
+                ctx.strokeStyle = 'rgba(150,150,150,0.8)'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.fillStyle = '#888'; ctx.font = '9px Inter, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(val.toFixed(1), tp.x + px*15, tp.y + py*15);
+            });
+            // Arrowhead at + end
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            ctx.lineTo(pos.x - ux*8 - uy*4, pos.y - uy*8 + ux*4);
+            ctx.lineTo(pos.x - ux*8 + uy*4, pos.y - uy*8 - ux*4);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(130,130,130,0.7)'; ctx.fill();
+            ctx.fillStyle = '#777'; ctx.font = '10px Inter, sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(lbl, pos.x + ux*16, pos.y + uy*16);
+        });
+        ctx.textBaseline = 'alphabetic';
+
+        // Solvent dots projected relative to centre — painters algorithm
+        visiblePts.map(pt => {
+            const r = pS(pt.d*2 - cx, pt.p - cy, pt.h - cz);
+            const inSphere = hasT
+                ? Math.sqrt(4*(pt.d-tD)**2 + (pt.p-tP)**2 + (pt.h-tH)**2) <= tR
+                : false;
+            return { name: pt.name, x: r.x, y: r.y, depth: r.depth, inSphere };
+        }).sort((a, b) => a.depth - b.depth)
+          .forEach(pt => {
+            const isCur = pt.name === s['Name'];
+            const isRef = pt.name === refName;
+            const r   = (isCur || isRef) ? 6 : (pt.inSphere ? 4 : 3);
+            const col = isCur ? '#e07070' : isRef ? '#4a86c8' : pt.inSphere ? '#556B2F' : '#ccc';
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, r, 0, Math.PI*2);
+            ctx.fillStyle = col; ctx.fill();
+            if (isCur || isRef) {
+                ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.fillStyle = '#333';
+                ctx.font = `${isCur ? 'bold ' : ''}9px Inter, sans-serif`;
+                ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                const lbl = pt.name.length > 22 ? pt.name.slice(0,21)+'\u2026' : pt.name;
+                ctx.fillText(lbl + (isCur ? ' \u25c4' : ''), pt.x + 8, pt.y + 3);
+            }
+        });
+        ctx.textBaseline = 'alphabetic';
+
+        // Target centre crosshair — always at canvas centre
+        if (hasT) {
+            ctx.beginPath();
+            ctx.moveTo(W/2-6, H/2); ctx.lineTo(W/2+6, H/2);
+            ctx.moveTo(W/2, H/2-6); ctx.lineTo(W/2, H/2+6);
+            ctx.strokeStyle = '#556B2F'; ctx.lineWidth = 2; ctx.stroke();
+        }
+
+        // Legend (top-right)
+        const leg = [];
+        if (hasT) leg.push({ col: '#556B2F', lbl: 'Inside sphere' });
+        leg.push({ col: '#e07070', lbl: (s['Name'].length > 16 ? s['Name'].slice(0,15)+'\u2026' : s['Name']) + ' (current)' });
+        if (refName) leg.push({ col: '#4a86c8', lbl: (refName.length > 16 ? refName.slice(0,15)+'\u2026' : refName) + ' (ref)' });
+        leg.push({ col: '#ccc', lbl: 'Other solvents' });
+        leg.forEach((item, i) => {
+            const lx = W - 118, ly = 12 + i*14;
+            ctx.beginPath(); ctx.arc(lx, ly-2, 4, 0, Math.PI*2);
+            ctx.fillStyle = item.col; ctx.fill();
+            ctx.fillStyle = '#444'; ctx.font = '9px Inter, sans-serif';
+            ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+            ctx.fillText(item.lbl, lx+8, ly-2);
+        });
+        ctx.textBaseline = 'alphabetic';
+    }
+
+    canvas.addEventListener('mousedown', e => {
+        dragging = true; lastX = e.clientX; lastY = e.clientY;
+        canvas.style.cursor = 'grabbing'; e.preventDefault();
+    });
+    window.addEventListener('mousemove', e => {
+        if (!dragging || !document.body.contains(canvas)) { dragging = false; return; }
+        az += (e.clientX - lastX) * 0.012;
+        el = Math.max(-Math.PI/2+0.05, Math.min(Math.PI/2-0.05, el + (e.clientY - lastY)*0.012));
+        lastX = e.clientX; lastY = e.clientY;
+        draw();
+    });
+    window.addEventListener('mouseup', () => { dragging = false; canvas.style.cursor = 'grab'; });
+
+    let ltx = 0, lty = 0;
+    canvas.addEventListener('touchstart', e => {
+        if (e.touches.length === 1) { ltx = e.touches[0].clientX; lty = e.touches[0].clientY; }
+    }, { passive: true });
+    canvas.addEventListener('touchmove', e => {
+        if (e.touches.length !== 1) return;
+        az += (e.touches[0].clientX - ltx) * 0.012;
+        el = Math.max(-Math.PI/2+0.05, Math.min(Math.PI/2-0.05, el + (e.touches[0].clientY - lty)*0.012));
+        ltx = e.touches[0].clientX; lty = e.touches[0].clientY;
+        draw();
+    }, { passive: true });
+
+    draw();
+}
+
+// ── 3D structure viewer ───────────────────────────────────────────────────────
+
+let molViewer  = null;
+let molStyle   = 'ballstick';
+
+const STYLES = {
+    ballstick: { stick: { radius: 0.12 }, sphere: { scale: 0.25 } },
+    sphere:    { sphere: {} },
+    stick:     { stick: {} },
+};
+
+function initViewer(s) {
+    // Wait for 3Dmol to be available (loaded async)
+    if (typeof $3Dmol === 'undefined') {
+        setTimeout(() => initViewer(s), 100);
+        return;
+    }
+
+    molViewer = $3Dmol.createViewer(document.getElementById('mol-viewer'), {
+        backgroundColor: 'white',
+        antialias: true,
+    });
+
+    const id  = encodeURIComponent(s['CAS'] || s['Name'] || '');
+    const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${id}/SDF?record_type=3d`;
+
+    fetch(url)
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then(sdf => {
+            molViewer.addModel(sdf, 'sdf');
+            molViewer.setStyle({}, STYLES[molStyle]);
+            molViewer.zoomTo();
+            molViewer.render();
+            document.getElementById('mol-status').textContent = '';
+        })
+        .catch(() => {
+            document.getElementById('mol-status').textContent = '3D structure not available from PubChem';
+        });
+}
+
+function setMolStyle(style) {
+    molStyle = style;
+    document.querySelectorAll('.mol-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + style).classList.add('active');
+    if (!molViewer) return;
+    molViewer.setStyle({}, STYLES[style]);
+    molViewer.render();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Turn anything that looks like a URL into a clickable link
+function linkify(text) {
+    return text.replace(/(https?:\/\/[^\s\]]+)/g,
+        url => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+}
+</script>
+
+</body>
+</html>
