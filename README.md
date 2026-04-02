@@ -46,6 +46,4 @@ The research and development of the SSbD Solvent Selection Guide was funded by [
 a EU-Funded project that investigates the transformation towards a sustainable pharmaceutical sector.
 This project has received funding from the European Union’s Horizon Europe research and innovation programme under grant agreement No 101057816. 
 
-<img src="TransPharm.svg" alt="App Screenshot" width="100">
-
-<img src="EUflag.svg" alt="App Screenshot" width="100">
+<img src="TransPharm.svg" alt="App Screenshot" width="100"> <br> <img src="EUflag.svg" alt="App Screenshot" width="100">
