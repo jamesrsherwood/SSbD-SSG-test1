@@ -15,7 +15,7 @@ Choose from preset reactions and autocomplete reagents on the [user interface](h
 
 The solvent selection guide potentially contains 365 solvents. Refine appropriate candidates by solvent properties. Environmental impact is calculated by end-of-life options and additional impacts from reactants.
 
-<img src="docs/Slide2.PNG" alt="App Screenshot" width="400">
+<img src="docs/Slide2.PNG" alt="App Screenshot" width="500">
 
 Solvents can also be selected based on hazards, functional groups, state, and REACH registration.
 
@@ -27,7 +27,7 @@ The [database](https://jamesrsherwood.github.io/SSG/database.html) allows the us
 
 The [database](https://jamesrsherwood.github.io/SSG/database.html) also lists physical properties.
 
-<img src="docs/Slide5.PNG" alt="App Screenshot" width="500">
+<img src="docs/Slide5.PNG" alt="App Screenshot" width="550">
 
 The [Safe and Sustainable by Design](https://jamesrsherwood.github.io/SSG/ssbd.html) analysis is accessible for all 365 solvents. A summary of the results is tabulated as well as a comparsion to the CHEM21 solvent selection guide.
 
