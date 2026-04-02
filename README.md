@@ -9,7 +9,7 @@ The [SSbD SSG](https://jamesrsherwood.github.io/SSG) is a tool for synthetic org
 
 ![App Screenshot](docs/Slide2.PNG)
 
-![App Screenshot](docs/Slide3.PNG)
+<img src="docs/Slide3.PNG" alt="App Screenshot" width="500">
 
 ![App Screenshot](docs/Slide4.PNG)
 
